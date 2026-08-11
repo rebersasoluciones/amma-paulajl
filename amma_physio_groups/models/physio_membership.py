@@ -245,7 +245,7 @@ class PhysioMembership(models.Model):
             if sub:
                 if sub.subscription_state == '4_paused':
                     sub.sudo().resume_subscription()
-                elif sub.subscription_state in ('5_renewed', '6_churn'):
+                elif sub.subscription_state == '6_churn':
                     sub.sudo().reopen_order()
                 continue
             group = membership.group_id
