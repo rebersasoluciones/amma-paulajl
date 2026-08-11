@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="sign_qr_fullscreen" name="Firma QR pantalla completa">
+        <t t-call="web.layout">
+            <div class="o_physio_kiosk">
+                <style>
+                    .o_physio_kiosk {
+                        position: fixed; inset: 0; background: #0f1720; color: #fff;
+                        font-family: Arial, Helvetica, sans-serif; overflow: auto;
+                        display: flex; flex-direction: column; align-items: center;
+                        justify-content: center; padding: 24px; text-align: center;
+                    }
+                    .o_physio_kiosk .kiosk-title { font-size: 2rem; font-weight: bold; }
+                    .o_physio_kiosk .kiosk-sub { font-size: 1.25rem; opacity: .8; margin-bottom: 24px; }
+                    .o_physio_kiosk .kiosk-grid {
+                        display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;
+                    }
+                    .o_physio_kiosk .kiosk-card {
+                        background: #fff; color: #0f1720; border-radius: 16px; padding: 24px;
+                        min-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+                    }
+                    .o_physio_kiosk .kiosk-doc { font-size: 1.25rem; font-weight: bold; margin-bottom: 12px; }
+                    .o_physio_kiosk .kiosk-card img { width: 320px; height: 320px; max-width: 70vw; max-height: 70vw; }
+                    .o_physio_kiosk .kiosk-hint { margin-top: 12px; color: #00A09D; font-weight: bold; }
+                    .o_physio_kiosk .kiosk-signed { font-size: 2rem; color: #1a9c50; font-weight: bold; padding: 60px 0; }
+                    .o_physio_kiosk .kiosk-empty { font-size: 1.25rem; opacity: .8; }
+                </style>
+                <div class="kiosk-title">Firma de documentos</div>
+                <div class="kiosk-sub" t-esc="event._appointment_sign_partner().name"/>
+
+                <div t-if="not docs" class="kiosk-empty">
+                    No hay documentos pendientes de firma para esta cita.
+                </div>
+
+                <div class="kiosk-grid">
+                    <t t-foreach="docs" t-as="doc">
+                        <div class="kiosk-card">
+                            <div class="kiosk-doc" t-esc="doc['name']"/>
+                            <t t-if="doc['signed']">
+                                <div class="kiosk-signed">✓ Firmado</div>
+                            </t>
+                            <t t-else="">
+                                <img t-if="doc['qr']" t-att-src="'data:image/png;base64,%s' % doc['qr']" alt="QR"/>
+                                <div class="kiosk-hint">Escanea el código para firmar</div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+
+                <script type="text/javascript">
+                    setTimeout(function () { window.location.reload(); }, 20000);
+                </script>
+            </div>
+        </t>
+    </template>
+
+</odoo>

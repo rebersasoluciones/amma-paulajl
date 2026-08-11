@@ -15,6 +15,10 @@
                         string="Firmar (QR)" class="btn-secondary"
                         invisible="not appointment_type_id"
                         help="Muestra el código QR para que el paciente firme en la tablet."/>
+                <button name="action_appointment_sign_qr_fullscreen" type="object"
+                        string="QR pantalla completa" class="btn-secondary"
+                        invisible="not appointment_type_id"
+                        help="Abre el QR a pantalla completa (modo tablet/kiosco)."/>
                 <button name="action_print_blank_documents" type="object"
                         string="Imprimir en blanco"
                         invisible="sign_request_count == 0"/>

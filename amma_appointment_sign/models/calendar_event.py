@@ -195,6 +195,16 @@ class CalendarEvent(models.Model):
             'target': 'new',
         }
 
+    def action_appointment_sign_qr_fullscreen(self):
+        """Abre la página kiosco a pantalla completa con el QR para la tablet."""
+        self.ensure_one()
+        self._ensure_sign_requests()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/appointment/sign/qr/%s' % self.id,
+            'target': 'new',
+        }
+
     def action_print_blank_documents(self):
         self.ensure_one()
         self._ensure_sign_requests()
