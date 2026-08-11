@@ -4,7 +4,7 @@
         <field name="name">Cita: documentos a firmar</field>
         <field name="model_id" ref="calendar.model_calendar_event"/>
         <field name="subject">Documentos para tu cita · {{ object.appointment_type_id.name or object.name }}</field>
-        <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="email_from">{{ (object.user_id.email_formatted or object.user_id.company_id.email_formatted or user.email_formatted) }}</field>
         <field name="partner_to">{{ object._appointment_sign_partner().id }}</field>
         <field name="auto_delete" eval="False"/>
         <field name="body_html" type="html">
@@ -35,7 +35,7 @@
     <p style="font-size:13px;color:#888;">
         Si ya has firmado o vas a traer los documentos en papel, ignora los botones.
     </p>
-    <p>Gracias,<br/><t t-out="object.company_id.name or ''">La clínica</t></p>
+    <p>Gracias,<br/><t t-out="object.user_id.company_id.name or ''">La clínica</t></p>
 </div>
         </field>
     </record>
