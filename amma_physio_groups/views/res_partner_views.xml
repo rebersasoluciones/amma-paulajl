@@ -30,7 +30,6 @@
                 <field name="name"/>
                 <field name="phone"/>
                 <field name="email"/>
-                <field name="physio_active_group_ids" widget="many2many_tags" string="Grupos"/>
                 <field name="physio_membership_count" string="Suscripciones"/>
             </list>
         </field>
