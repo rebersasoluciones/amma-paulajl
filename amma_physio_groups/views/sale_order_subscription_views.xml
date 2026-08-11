@@ -22,6 +22,14 @@
             <field name="partner_id" position="after">
                 <field name="physio_group_id" optional="show"/>
             </field>
+            <field name="subscription_state" position="before">
+                <field name="physio_amount_due" widget="monetary" optional="show"
+                       string="Pendiente de pago"/>
+                <field name="physio_payment_status" widget="badge" optional="show"
+                       decoration-success="physio_payment_status == 'paid'"
+                       decoration-warning="physio_payment_status == 'due'"
+                       decoration-muted="physio_payment_status == 'no_invoice'"/>
+            </field>
         </field>
     </record>
 
