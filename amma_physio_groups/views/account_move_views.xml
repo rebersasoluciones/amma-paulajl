@@ -68,11 +68,10 @@
                 <separator/>
                 <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
                 <filter string="Contabilizadas" name="posted" domain="[('state', '=', 'posted')]"/>
-                <group expand="0" string="Agrupar por">
-                    <filter string="Paciente" name="group_partner" context="{'group_by': 'partner_id'}"/>
-                    <filter string="Grupo" name="group_group" context="{'group_by': 'physio_group_id'}"/>
-                    <filter string="Estado de pago" name="group_payment" context="{'group_by': 'payment_state'}"/>
-                </group>
+                <separator/>
+                <filter string="Paciente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                <filter string="Grupo" name="group_group" context="{'group_by': 'physio_group_id'}"/>
+                <filter string="Estado de pago" name="group_payment" context="{'group_by': 'payment_state'}"/>
             </search>
         </field>
     </record>

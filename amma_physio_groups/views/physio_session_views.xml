@@ -151,12 +151,11 @@
                 <separator/>
                 <filter string="Hoy" name="today"
                         domain="[('start_datetime', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('start_datetime', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
-                <group expand="0" string="Agrupar por">
-                    <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
-                    <filter string="Fisioterapeuta" name="group_instructor" context="{'group_by': 'instructor_id'}"/>
-                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
-                    <filter string="Día" name="group_day" context="{'group_by': 'start_datetime:day'}"/>
-                </group>
+                <separator/>
+                <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
+                <filter string="Fisioterapeuta" name="group_instructor" context="{'group_by': 'instructor_id'}"/>
+                <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Día" name="group_day" context="{'group_by': 'start_datetime:day'}"/>
             </search>
         </field>
     </record>

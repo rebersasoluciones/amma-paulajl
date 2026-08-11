@@ -31,6 +31,7 @@
         <field name="arch" type="xml">
             <kanban default_group_by="group_id">
                 <field name="state"/>
+                <field name="currency_id"/>
                 <templates>
                     <t t-name="card">
                         <div class="o_kanban_record_top">
@@ -148,11 +149,10 @@
                 <separator/>
                 <filter string="Por facturar" name="to_invoice"
                         domain="[('state', '=', 'active'), ('recurring_next_date', '&lt;=', context_today())]"/>
-                <group expand="0" string="Agrupar por">
-                    <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
-                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
-                    <filter string="Paciente" name="group_partner" context="{'group_by': 'partner_id'}"/>
-                </group>
+                <separator/>
+                <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
+                <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Paciente" name="group_partner" context="{'group_by': 'partner_id'}"/>
             </search>
         </field>
     </record>

@@ -28,6 +28,7 @@
             <kanban highlight_color="color">
                 <field name="active_member_count"/>
                 <field name="session_count"/>
+                <field name="currency_id"/>
                 <templates>
                     <t t-name="card">
                         <div class="oe_kanban_content">
@@ -154,10 +155,9 @@
                         domain="[('allow_cross_booking', '=', True)]"/>
                 <separator/>
                 <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
-                <group expand="0" string="Agrupar por">
-                    <filter string="Fisioterapeuta" name="group_instructor"
-                            context="{'group_by': 'instructor_id'}"/>
-                </group>
+                <separator/>
+                <filter string="Fisioterapeuta" name="group_instructor"
+                        context="{'group_by': 'instructor_id'}"/>
             </search>
         </field>
     </record>

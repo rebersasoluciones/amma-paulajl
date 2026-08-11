@@ -32,11 +32,10 @@
                 <filter string="Asistió" name="attended" domain="[('state', '=', 'attended')]"/>
                 <filter string="No asistió" name="no_show" domain="[('state', '=', 'no_show')]"/>
                 <filter string="Reservas de otro grupo" name="cross" domain="[('is_cross_booking', '=', True)]"/>
-                <group expand="0" string="Agrupar por">
-                    <filter string="Paciente" name="group_partner" context="{'group_by': 'partner_id'}"/>
-                    <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
-                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
-                </group>
+                <separator/>
+                <filter string="Paciente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
+                <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
             </search>
         </field>
     </record>
