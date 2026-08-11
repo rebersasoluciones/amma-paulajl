@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Campo "Grupo de fisioterapia" en la ficha de la suscripción nativa -->
+    <record id="view_order_form_physio_group" model="ir.ui.view">
+        <field name="name">sale.order.form.physio.group</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_order_view_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="physio_group_id" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Añade el grupo a la lista de suscripciones -->
+    <record id="view_subscription_tree_physio_group" model="ir.ui.view">
+        <field name="name">sale.order.list.physio.group</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="physio_group_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Acción del menú "Suscripciones" (suscripciones nativas de fisioterapia) -->
+    <record id="action_physio_subscription" model="ir.actions.act_window">
+        <field name="name">Suscripciones</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('physio_group_id', '!=', False)]</field>
+        <field name="search_view_id" ref="sale_subscription.sale_subscription_view_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('sale_subscription.sale_subscription_view_tree')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('sale_subscription.sale_subscription_view_kanban')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('sale_subscription.sale_subscription_primary_form_view')})]"/>
+        <field name="context">{'default_subscription_state': '1_draft'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Crea la suscripción de un paciente</p>
+            <p>Elige el paciente y su grupo; al confirmar se factura de forma recurrente
+               y el paciente queda apuntado a las clases del grupo.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import _, api, fields, models, Command
+from odoo import _, api, fields, models
 
 
 class PhysioMembership(models.Model):
@@ -140,10 +140,16 @@ class PhysioMembership(models.Model):
                 if not membership.date_start:
                     vals['date_start'] = fields.Date.context_today(membership)
                 membership.write(vals)
-            # Crea/reactiva la suscripción nativa de facturación
-            membership._ensure_subscription()
         # Reserva su plaza en las clases futuras de su grupo
         self._autoenroll_future_sessions()
+
+    def _cancel_future_bookings(self):
+        """Cancela las reservas futuras del paciente (al pausar/dar de baja)."""
+        for membership in self:
+            future = membership.booking_ids.filtered(
+                lambda b: b.state == 'booked'
+                and b.session_start and b.session_start >= fields.Datetime.now())
+            future.write({'state': 'cancelled'})
 
     def _autoenroll_future_sessions(self):
         """Apunta al paciente en todas las clases futuras de su grupo (plaza
@@ -172,25 +178,13 @@ class PhysioMembership(models.Model):
 
     def action_pause(self):
         self.write({'state': 'paused'})
-        for membership in self.filtered('subscription_id'):
-            if membership.subscription_id.subscription_state == '3_progress':
-                membership.subscription_id.sudo().pause_subscription()
 
     def action_cancel(self):
         self.write({
             'state': 'cancelled',
             'date_end': fields.Date.context_today(self),
         })
-        for membership in self:
-            # Cancela reservas futuras del paciente en su grupo
-            future = membership.booking_ids.filtered(
-                lambda b: b.state == 'booked'
-                and b.session_start and b.session_start >= fields.Datetime.now())
-            future.write({'state': 'cancelled'})
-            # Cierra la suscripción nativa
-            if membership.subscription_id and membership.subscription_id.subscription_state in (
-                    '3_progress', '4_paused'):
-                membership.subscription_id.sudo().set_close()
+        self._cancel_future_bookings()
 
     def action_draft(self):
         self.write({'state': 'draft'})
@@ -208,60 +202,6 @@ class PhysioMembership(models.Model):
             'target': 'new',
             'context': {'default_membership_id': self.id},
         }
-
-    # ------------------------------------------------------------------
-    # Suscripción nativa (facturación recurrente)
-    # ------------------------------------------------------------------
-    def _prepare_subscription_vals(self):
-        self.ensure_one()
-        product = self.product_id or self.group_id.product_id
-        vals = {
-            'partner_id': self.partner_id.id,
-            'company_id': self.company_id.id,
-            'plan_id': self.group_id.subscription_plan_id.id,
-            'physio_membership_id': self.id,
-            'physio_group_id': self.group_id.id,
-            'start_date': self.date_start or fields.Date.context_today(self),
-            'client_order_ref': self.name,
-            'order_line': [Command.create({
-                'product_id': product.id,
-                'product_uom_qty': 1,
-                'price_unit': self.price or product.lst_price,
-            })],
-        }
-        if self.fiscal_position_id:
-            vals['fiscal_position_id'] = self.fiscal_position_id.id
-        if self.payment_term_id:
-            vals['payment_term_id'] = self.payment_term_id.id
-        if self.pricelist_id:
-            vals['pricelist_id'] = self.pricelist_id.id
-        return vals
-
-    def _ensure_subscription(self):
-        """Crea y confirma la suscripción nativa si no existe; si ya existe,
-        la reactiva cuando estaba pausada o cerrada."""
-        for membership in self:
-            sub = membership.subscription_id
-            if sub:
-                if sub.subscription_state == '4_paused':
-                    sub.sudo().resume_subscription()
-                elif sub.subscription_state == '6_churn':
-                    sub.sudo().reopen_order()
-                continue
-            group = membership.group_id
-            product = membership.product_id or group.product_id
-            if not group.subscription_plan_id or not product or not product.recurring_invoice:
-                membership.message_post(body=_(
-                    "No se ha creado la suscripción de facturación: revisa que el "
-                    "grupo tenga un <b>plan de suscripción</b> y un <b>producto "
-                    "recurrente</b>."))
-                continue
-            sub = self.env['sale.order'].sudo().create(
-                membership._prepare_subscription_vals())
-            sub.action_confirm()
-            membership.subscription_id = sub.id
-            membership.message_post(body=_(
-                "Suscripción de facturación creada: %s") % sub.name)
 
     def action_view_subscription(self):
         self.ensure_one()
