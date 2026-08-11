@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== TARJETA EN /my/home ==================== -->
+    <template id="portal_my_home_physio" name="Portal: Fisioterapia"
+              inherit_id="portal.portal_my_home" priority="30">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/amma_physio_groups/static/description/icon.png'"/>
+                <t t-set="title">Mis clases</t>
+                <t t-set="text">Consulta tu grupo y reserva o anula tus clases</t>
+                <t t-set="url" t-value="'/my/physio'"/>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ==================== PÁGINA PRINCIPAL DEL PACIENTE ==================== -->
+    <template id="portal_physio_home" name="Portal: Mis clases de fisioterapia">
+        <t t-call="portal.portal_layout">
+            <t t-set="page_name" t-value="'physio'"/>
+
+            <div class="container">
+                <!-- Avisos -->
+                <div t-if="request.params.get('booking_ok')" class="alert alert-success mt-3" role="alert">
+                    <i class="fa fa-check-circle me-1"/> Te has apuntado a la clase correctamente.
+                </div>
+                <div t-if="request.params.get('cancel_ok')" class="alert alert-info mt-3" role="alert">
+                    <i class="fa fa-info-circle me-1"/> Has anulado tu reserva.
+                </div>
+                <div t-if="request.params.get('booking_error')" class="alert alert-danger mt-3" role="alert">
+                    <i class="fa fa-exclamation-triangle me-1"/> No se ha podido completar la operación
+                    (la clase puede estar completa, ya empezada o no disponible).
+                </div>
+
+                <h3 class="mt-4 mb-3">Mis clases de fisioterapia</h3>
+
+                <!-- SIN SUSCRIPCIÓN -->
+                <div t-if="not memberships" class="alert alert-warning" role="alert">
+                    Todavía no tienes una suscripción activa. Ponte en contacto con la clínica.
+                </div>
+
+                <!-- MIS GRUPOS -->
+                <div t-if="memberships" class="row g-3 mb-4">
+                    <t t-foreach="memberships" t-as="membership">
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fa fa-users me-1 text-primary"/>
+                                        <span t-field="membership.group_id.name"/>
+                                    </h5>
+                                    <p class="card-text text-muted mb-2">
+                                        Cuota mensual:
+                                        <strong t-field="membership.price"
+                                                t-options='{"widget": "monetary", "display_currency": membership.currency_id}'/>
+                                    </p>
+                                    <div t-if="membership.group_id.schedule_line_ids" class="small text-muted">
+                                        <div class="fw-bold">Horario habitual:</div>
+                                        <t t-foreach="membership.group_id.schedule_line_ids" t-as="slot">
+                                            <span class="badge text-bg-light me-1 mb-1" t-esc="slot.display_name"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- PAGOS PENDIENTES -->
+                <div t-if="open_invoices" class="card mb-4 border-warning">
+                    <div class="card-header bg-warning-subtle">
+                        <i class="fa fa-credit-card me-1"/> Pagos pendientes
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0 align-middle">
+                            <tbody>
+                                <t t-foreach="open_invoices" t-as="invoice">
+                                    <tr>
+                                        <td><span t-field="invoice.name"/></td>
+                                        <td><span t-field="invoice.invoice_date"/></td>
+                                        <td class="text-end">
+                                            <strong t-field="invoice.amount_residual"
+                                                    t-options='{"widget": "monetary", "display_currency": invoice.currency_id}'/>
+                                        </td>
+                                        <td class="text-end">
+                                            <a t-att-href="invoice.get_portal_url(anchor='portal_pay')"
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fa fa-credit-card me-1"/> Pagar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MIS PRÓXIMAS CLASES -->
+                <h4 class="mt-4 mb-3"><i class="fa fa-calendar-check-o me-1"/> Mis próximas clases</h4>
+                <div t-if="not bookings" class="text-muted mb-4">No tienes clases reservadas.</div>
+                <div t-if="bookings" class="card mb-4">
+                    <div class="card-body p-0">
+                        <table class="table mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y hora</th>
+                                    <th>Grupo</th>
+                                    <th class="text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="bookings" t-as="booking">
+                                    <tr>
+                                        <td><span t-field="booking.session_start"/></td>
+                                        <td>
+                                            <span t-field="booking.group_id.name"/>
+                                            <span t-if="booking.is_cross_booking"
+                                                  class="badge text-bg-info ms-1">otro grupo</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <form t-if="booking.session_id.group_id.allow_self_booking"
+                                                  t-attf-action="/my/physio/booking/#{booking.id}/cancel"
+                                                  method="post" class="d-inline">
+                                                <input type="hidden" name="csrf_token"
+                                                       t-att-value="request.csrf_token()"/>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fa fa-times me-1"/> Anular
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CLASES DISPONIBLES -->
+                <h4 class="mt-4 mb-3"><i class="fa fa-plus-circle me-1"/> Clases disponibles</h4>
+                <div t-if="not bookable_sessions" class="text-muted mb-5">
+                    No hay clases disponibles para reservar en este momento.
+                </div>
+                <div t-if="bookable_sessions" class="card mb-5">
+                    <div class="card-body p-0">
+                        <table class="table mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y hora</th>
+                                    <th>Grupo</th>
+                                    <th>Plazas libres</th>
+                                    <th class="text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="bookable_sessions" t-as="session">
+                                    <tr>
+                                        <td><span t-field="session.start_datetime"/></td>
+                                        <td>
+                                            <span t-field="session.group_id.name"/>
+                                            <span t-if="session.group_id not in memberships.mapped('group_id')"
+                                                  class="badge text-bg-info ms-1">otro grupo</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge text-bg-success"
+                                                  t-esc="session.seats_available"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <form t-attf-action="/my/physio/session/#{session.id}/book"
+                                                  method="post" class="d-inline">
+                                                <input type="hidden" name="csrf_token"
+                                                       t-att-value="request.csrf_token()"/>
+                                                <button type="submit" class="btn btn-sm btn-primary">
+                                                    <i class="fa fa-plus me-1"/> Apuntarme
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== CALENDARIO ==================== -->
+    <record id="view_physio_session_calendar" model="ir.ui.view">
+        <field name="name">physio.session.calendar</field>
+        <field name="model">physio.session</field>
+        <field name="arch" type="xml">
+            <calendar string="Clases" date_start="start_datetime" date_stop="stop_datetime"
+                      color="group_id" mode="week" quick_create="0">
+                <field name="group_id" filters="1"/>
+                <field name="instructor_id" filters="1"/>
+                <field name="seats_taken"/>
+                <field name="capacity"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- ==================== LISTA ==================== -->
+    <record id="view_physio_session_list" model="ir.ui.view">
+        <field name="name">physio.session.list</field>
+        <field name="model">physio.session</field>
+        <field name="arch" type="xml">
+            <list string="Clases" decoration-muted="state == 'cancelled'"
+                  decoration-success="state == 'done'">
+                <field name="start_datetime"/>
+                <field name="group_id"/>
+                <field name="instructor_id" optional="show"/>
+                <field name="duration" widget="float_time" optional="hide"/>
+                <field name="seats_taken" string="Ocupadas"/>
+                <field name="capacity" string="Plazas"/>
+                <field name="seats_available" string="Libres"/>
+                <field name="is_full" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'scheduled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ==================== KANBAN ==================== -->
+    <record id="view_physio_session_kanban" model="ir.ui.view">
+        <field name="name">physio.session.kanban</field>
+        <field name="model">physio.session</field>
+        <field name="arch" type="xml">
+            <kanban highlight_color="color" default_group_by="group_id">
+                <field name="seats_taken"/>
+                <field name="capacity"/>
+                <field name="is_full"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record_top mb-1">
+                            <strong><field name="start_datetime"/></strong>
+                        </div>
+                        <div class="text-muted"><field name="group_id"/></div>
+                        <div class="mt-2">
+                            <span t-attf-class="badge #{record.is_full.raw_value ? 'text-bg-danger' : 'text-bg-success'}">
+                                <field name="seats_taken"/>/<field name="capacity"/> plazas
+                            </span>
+                            <field name="state" widget="label_selection"
+                                   options="{'classes': {'scheduled': 'info', 'done': 'success', 'cancelled': 'danger'}}"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ==================== FORMULARIO ==================== -->
+    <record id="view_physio_session_form" model="ir.ui.view">
+        <field name="name">physio.session.form</field>
+        <field name="model">physio.session</field>
+        <field name="arch" type="xml">
+            <form string="Clase">
+                <header>
+                    <button name="action_mark_done" type="object" string="Marcar realizada"
+                            class="oe_highlight" invisible="state != 'scheduled'"/>
+                    <button name="action_cancel" type="object" string="Cancelar clase"
+                            invisible="state == 'cancelled'"
+                            confirm="¿Cancelar la clase y sus reservas activas?"/>
+                    <button name="action_reset_scheduled" type="object" string="Reprogramar"
+                            invisible="state == 'scheduled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="scheduled,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="display_name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="group_id"/>
+                            <field name="instructor_id" readonly="1"/>
+                            <field name="allow_cross_booking" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="start_datetime"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="capacity"/>
+                            <label for="seats_taken" string="Ocupación"/>
+                            <div>
+                                <field name="seats_taken" class="oe_inline"/> /
+                                <field name="capacity" class="oe_inline" readonly="1"/>
+                                (<field name="seats_available" class="oe_inline"/> libres)
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Pacientes" name="attendees">
+                            <field name="booking_ids" context="{'default_session_id': id}">
+                                <list editable="bottom">
+                                    <field name="partner_id"/>
+                                    <field name="membership_id" optional="hide"/>
+                                    <field name="is_cross_booking" optional="show"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'attended'"
+                                           decoration-danger="state == 'no_show'"
+                                           decoration-muted="state == 'cancelled'"/>
+                                    <button name="action_set_attended" type="object"
+                                            string="Asistió" icon="fa-check"
+                                            invisible="state != 'booked'"/>
+                                    <button name="action_set_no_show" type="object"
+                                            string="No asistió" icon="fa-times"
+                                            invisible="state != 'booked'"/>
+                                    <button name="action_cancel" type="object"
+                                            string="Cancelar" icon="fa-ban"
+                                            invisible="state == 'cancelled'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== SEARCH ==================== -->
+    <record id="view_physio_session_search" model="ir.ui.view">
+        <field name="name">physio.session.search</field>
+        <field name="model">physio.session</field>
+        <field name="arch" type="xml">
+            <search string="Clases">
+                <field name="group_id"/>
+                <field name="instructor_id"/>
+                <filter string="Próximas" name="upcoming"
+                        domain="[('start_datetime', '&gt;=', datetime.datetime.now())]"/>
+                <filter string="Programadas" name="scheduled" domain="[('state', '=', 'scheduled')]"/>
+                <filter string="Realizadas" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Con plazas libres" name="available" domain="[('is_full', '=', False)]"/>
+                <separator/>
+                <filter string="Hoy" name="today"
+                        domain="[('start_datetime', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('start_datetime', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
+                    <filter string="Fisioterapeuta" name="group_instructor" context="{'group_by': 'instructor_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Día" name="group_day" context="{'group_by': 'start_datetime:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== ACCIÓN ==================== -->
+    <record id="action_physio_session" model="ir.actions.act_window">
+        <field name="name">Clases</field>
+        <field name="res_model">physio.session</field>
+        <field name="view_mode">calendar,list,kanban,form</field>
+        <field name="search_view_id" ref="view_physio_session_search"/>
+        <field name="context">{'search_default_upcoming': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay clases todavía</p>
+            <p>Genera las clases desde el horario semanal de cada grupo.</p>
+        </field>
+    </record>
+
+</odoo>

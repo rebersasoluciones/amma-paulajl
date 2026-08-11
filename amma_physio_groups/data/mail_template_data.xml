@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_physio_invoice" model="mail.template">
+        <field name="name">Fisioterapia: cuota mensual (con pago online)</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">{{ object.company_id.name }} · Tu cuota mensual {{ object.name }}</field>
+        <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="auto_delete" eval="False"/>
+        <field name="lang">{{ object.partner_id.lang or user.lang }}</field>
+        <field name="body_html" type="html">
+<div style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#333;">
+    <p>Hola <t t-out="object.partner_id.name or ''">Paciente</t>,</p>
+    <p>
+        Ya tienes disponible tu cuota mensual del grupo
+        <strong t-out="object.physio_group_id.name or ''">Grupo</strong>.
+    </p>
+    <table style="border-collapse:collapse;margin:16px 0;">
+        <tr>
+            <td style="padding:4px 12px;color:#666;">Referencia</td>
+            <td style="padding:4px 12px;"><strong t-out="object.name or ''">FACTURA</strong></td>
+        </tr>
+        <tr>
+            <td style="padding:4px 12px;color:#666;">Importe</td>
+            <td style="padding:4px 12px;">
+                <strong t-out="format_amount(object.amount_total, object.currency_id) or ''">0,00</strong>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:4px 12px;color:#666;">Fecha</td>
+            <td style="padding:4px 12px;"><t t-out="format_date(object.invoice_date) or ''">Fecha</t></td>
+        </tr>
+    </table>
+    <p style="text-align:center;margin:28px 0;">
+        <a t-att-href="object.get_portal_url(anchor='portal_pay')"
+           style="background-color:#00A09D;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
+            Pagar ahora
+        </a>
+    </p>
+    <p style="font-size:13px;color:#888;">
+        Al pulsar el botón podrás pagar de forma segura con los métodos de pago
+        disponibles. Si ya has realizado el pago, ignora este mensaje.
+    </p>
+    <p>Gracias,<br/><t t-out="object.company_id.name or ''">La clínica</t></p>
+</div>
+        </field>
+    </record>
+</odoo>
