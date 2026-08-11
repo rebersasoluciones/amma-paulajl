@@ -17,7 +17,7 @@
                     </p>
                     <field name="event_id" invisible="1"/>
                     <field name="line_ids" nolabel="1">
-                        <list create="false" delete="false" editable="false">
+                        <list create="false" delete="false">
                             <field name="qr_image" widget="image" options="{'size': [150, 150]}"/>
                             <field name="name"/>
                             <field name="signing_url" string="Enlace"/>
