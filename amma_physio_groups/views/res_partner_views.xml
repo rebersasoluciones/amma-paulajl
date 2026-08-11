@@ -29,7 +29,6 @@
             <list string="Pacientes">
                 <field name="name"/>
                 <field name="phone"/>
-                <field name="mobile" optional="show"/>
                 <field name="email"/>
                 <field name="physio_active_group_ids" widget="many2many_tags" string="Grupos"/>
                 <field name="physio_membership_count" string="Suscripciones"/>

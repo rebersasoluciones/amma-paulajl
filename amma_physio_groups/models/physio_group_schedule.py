@@ -31,10 +31,9 @@ class PhysioGroupSchedule(models.Model):
         string="Plazas",
         help="Si se deja a 0 se usa la capacidad por defecto del grupo.")
 
-    _sql_constraints = [
-        ('unique_slot', 'unique(group_id, weekday, start_time)',
-         "Ya existe una franja para ese grupo, día y hora."),
-    ]
+    _unique_slot = models.Constraint(
+        'unique(group_id, weekday, start_time)',
+        "Ya existe una franja para ese grupo, día y hora.")
 
     @api.depends('weekday', 'start_time')
     def _compute_display_name(self):

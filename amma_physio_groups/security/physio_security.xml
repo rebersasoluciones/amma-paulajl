@@ -8,26 +8,27 @@
         <field name="sequence">20</field>
     </record>
 
+    <!-- Privilegio (Odoo 19 agrupa los grupos de seguridad por privilegio) -->
+    <record id="privilege_physio" model="res.groups.privilege">
+        <field name="name">Fisioterapia</field>
+        <field name="category_id" ref="module_category_physio"/>
+        <field name="sequence">20</field>
+    </record>
+
     <!-- ==================== GRUPOS DE SEGURIDAD ==================== -->
     <record id="group_physio_user" model="res.groups">
-        <field name="name">Fisioterapia / Recepción</field>
-        <field name="category_id" ref="module_category_physio"/>
+        <field name="name">Recepción</field>
+        <field name="privilege_id" ref="privilege_physio"/>
         <field name="comment">Personal de recepción: gestiona pacientes, clases, reservas y cobros.</field>
+        <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
     </record>
 
     <record id="group_physio_manager" model="res.groups">
-        <field name="name">Fisioterapia / Responsable</field>
-        <field name="category_id" ref="module_category_physio"/>
+        <field name="name">Responsable</field>
+        <field name="privilege_id" ref="privilege_physio"/>
         <field name="implied_ids" eval="[(4, ref('group_physio_user')), (4, ref('account.group_account_invoice'))]"/>
         <field name="comment">Responsable de la clínica: además configura grupos, precios y ajustes.</field>
-    </record>
-
-    <!-- El responsable hereda al usuario -->
-    <record id="group_physio_user" model="res.groups">
-        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
-    </record>
-    <record id="group_physio_manager" model="res.groups">
-        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
     </record>
 
     <!-- ==================== REGLAS DE REGISTRO (BACKEND) ==================== -->
