@@ -55,4 +55,67 @@
         </t>
     </template>
 
+    <!-- ==================== KIOSCO: LISTA DE FIRMAS PENDIENTES ==================== -->
+    <template id="sign_kiosk_list" name="Kiosco de firmas (tablet)">
+        <t t-call="web.layout">
+            <div class="o_physio_kiosk_list">
+                <style>
+                    .o_physio_kiosk_list {
+                        position: fixed; inset: 0; background: #0f1720; color: #fff;
+                        font-family: Arial, Helvetica, sans-serif; overflow: auto; padding: 28px;
+                    }
+                    .o_physio_kiosk_list .k-title { font-size: 2rem; font-weight: bold; text-align: center; }
+                    .o_physio_kiosk_list .k-sub { text-align: center; opacity: .8; margin-bottom: 24px; font-size: 1.1rem; }
+                    .o_physio_kiosk_list .k-grid {
+                        display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                        gap: 18px; max-width: 1100px; margin: 0 auto;
+                    }
+                    .o_physio_kiosk_list .k-card {
+                        display: block; text-decoration: none; background: #fff; color: #0f1720;
+                        border-radius: 16px; padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,.35);
+                        transition: transform .1s ease;
+                    }
+                    .o_physio_kiosk_list .k-card:active { transform: scale(.98); }
+                    .o_physio_kiosk_list .k-name { font-size: 1.5rem; font-weight: bold; }
+                    .o_physio_kiosk_list .k-doc { color: #444; margin-top: 6px; }
+                    .o_physio_kiosk_list .k-time { color: #00A09D; font-weight: bold; margin-top: 10px; }
+                    .o_physio_kiosk_list .k-cta { margin-top: 14px; background: #00A09D; color: #fff;
+                        text-align: center; padding: 10px; border-radius: 10px; font-weight: bold; }
+                    .o_physio_kiosk_list .k-empty { text-align: center; opacity: .8; font-size: 1.3rem; margin-top: 60px; }
+                    .o_physio_kiosk_list .k-foot { text-align: center; margin-top: 26px; }
+                    .o_physio_kiosk_list .k-foot a { color: #9fb3c8; }
+                </style>
+
+                <div class="k-title">Documentos por firmar</div>
+                <div class="k-sub">Toca tu nombre para firmar en la tablet</div>
+
+                <div t-if="not docs" class="k-empty">
+                    No hay documentos pendientes de firma.
+                </div>
+
+                <div class="k-grid">
+                    <t t-foreach="docs" t-as="doc">
+                        <a class="k-card" t-att-href="doc['url']">
+                            <div class="k-name" t-esc="doc['partner']"/>
+                            <div class="k-doc" t-esc="doc['document']"/>
+                            <div t-if="doc['start_str']" class="k-time">
+                                <t t-esc="doc['start_str']"/>
+                            </div>
+                            <div class="k-cta">Firmar ahora</div>
+                        </a>
+                    </t>
+                </div>
+
+                <div class="k-foot">
+                    <a t-if="scope == 'today'" href="/appointment/sign/kiosk?scope=all">Ver todas las pendientes</a>
+                    <a t-else="" href="/appointment/sign/kiosk?scope=today">Ver solo las de hoy</a>
+                </div>
+
+                <script type="text/javascript">
+                    setTimeout(function () { window.location.reload(); }, 30000);
+                </script>
+            </div>
+        </t>
+    </template>
+
 </odoo>

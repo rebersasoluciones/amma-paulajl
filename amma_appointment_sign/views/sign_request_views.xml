@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== KANBAN ==================== -->
+    <record id="sign_request_view_kanban_appointment" model="ir.ui.view">
+        <field name="name">sign.request.kanban.appointment</field>
+        <field name="model">sign.request</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" create="false">
+                <field name="state"/>
+                <field name="appointment_start"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_content">
+                            <div class="o_kanban_record_top mb-1">
+                                <strong class="fs-5"><field name="signer_partner_id"/></strong>
+                            </div>
+                            <div class="text-muted"><field name="reference"/></div>
+                            <div class="mt-1"><i class="fa fa-stethoscope me-1"/><field name="appointment_type_id"/></div>
+                            <div class="mt-1"><i class="fa fa-clock-o me-1"/><field name="appointment_start"/></div>
+                            <div class="mt-2">
+                                <field name="state" widget="label_selection"
+                                       options="{'classes': {'sent': 'warning', 'signed': 'success', 'canceled': 'danger', 'expired': 'danger'}}"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ==================== LISTA ==================== -->
+    <record id="sign_request_view_list_appointment" model="ir.ui.view">
+        <field name="name">sign.request.list.appointment</field>
+        <field name="model">sign.request</field>
+        <field name="arch" type="xml">
+            <list string="Firmas de citas" create="false"
+                  decoration-success="state == 'signed'" decoration-warning="state == 'sent'">
+                <field name="appointment_start"/>
+                <field name="signer_partner_id"/>
+                <field name="appointment_type_id"/>
+                <field name="reference"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'signed'"
+                       decoration-warning="state == 'sent'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ==================== SEARCH ==================== -->
+    <record id="sign_request_view_search_appointment" model="ir.ui.view">
+        <field name="name">sign.request.search.appointment</field>
+        <field name="model">sign.request</field>
+        <field name="arch" type="xml">
+            <search string="Firmas de citas">
+                <field name="signer_partner_id"/>
+                <field name="appointment_type_id"/>
+                <filter string="Pendientes" name="pending" domain="[('state', '=', 'sent')]"/>
+                <filter string="Firmadas" name="signed" domain="[('state', '=', 'signed')]"/>
+                <separator/>
+                <filter string="Citas de hoy" name="today"
+                        domain="[('appointment_start', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('appointment_start', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                <separator/>
+                <filter string="Tipo de cita" name="group_type" context="{'group_by': 'appointment_type_id'}"/>
+                <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Firmante" name="group_signer" context="{'group_by': 'signer_partner_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== ACCIONES ==================== -->
+    <record id="action_appointment_sign_requests" model="ir.actions.act_window">
+        <field name="name">Pendientes de firma</field>
+        <field name="res_model">sign.request</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('calendar_event_id', '!=', False)]</field>
+        <field name="search_view_id" ref="sign_request_view_search_appointment"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('sign_request_view_kanban_appointment')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('sign_request_view_list_appointment')})]"/>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay documentos pendientes de firma</p>
+            <p>Aquí verás los documentos de las citas y su estado de firma.</p>
+        </field>
+    </record>
+
+    <record id="action_appointment_sign_kiosk" model="ir.actions.act_url">
+        <field name="name">Tablet de firmas (kiosco)</field>
+        <field name="url">/appointment/sign/kiosk</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ==================== MENÚS ==================== -->
+    <menuitem id="menu_appointment_sign_root" name="Firmas de citas"
+              web_icon="amma_appointment_sign,static/description/icon.png"
+              sequence="46" groups="sign.group_sign_user"/>
+    <menuitem id="menu_appointment_sign_pending" name="Pendientes de firma"
+              parent="menu_appointment_sign_root"
+              action="action_appointment_sign_requests" sequence="10"/>
+    <menuitem id="menu_appointment_sign_kiosk" name="Tablet (kiosco)"
+              parent="menu_appointment_sign_root"
+              action="action_appointment_sign_kiosk" sequence="20"/>
+
+</odoo>
