@@ -109,9 +109,15 @@
                         <page string="Facturación" name="billing">
                             <group>
                                 <field name="product_id"/>
+                                <field name="subscription_plan_id"/>
                                 <field name="price" widget="monetary"/>
                                 <field name="currency_id" invisible="1"/>
                             </group>
+                            <p class="text-muted">
+                                Cada suscripción activa crea una <b>suscripción nativa de Odoo</b>
+                                que factura esta cuota de forma recurrente según el plan. El producto
+                                debe ser de tipo <b>recurrente</b> (Producto de suscripción).
+                            </p>
                         </page>
                         <page string="Portal / Reservas" name="portal">
                             <group>

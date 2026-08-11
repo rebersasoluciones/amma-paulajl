@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-import logging
-from dateutil.relativedelta import relativedelta
-
 from odoo import _, api, fields, models, Command
-from odoo.exceptions import UserError, ValidationError
-
-_logger = logging.getLogger(__name__)
 
 
 class PhysioMembership(models.Model):
@@ -51,13 +45,23 @@ class PhysioMembership(models.Model):
         help="Número máximo de clases al mes para este paciente (0 = sin límite). "
              "Por defecto hereda el valor del grupo.")
 
-    auto_invoice = fields.Boolean(
-        string="Facturación automática", default=True,
-        help="Genera automáticamente la factura mensual y envía el correo de cobro.")
+    # -- Suscripción nativa (facturación recurrente) --
+    subscription_id = fields.Many2one(
+        'sale.order', string="Suscripción", readonly=True, copy=False,
+        help="Suscripción nativa de Odoo que factura esta cuota de forma "
+             "recurrente (fecha de inicio, posición fiscal, condiciones de pago...).")
+    subscription_state = fields.Selection(
+        related='subscription_id.subscription_state', string="Estado de la suscripción")
+    fiscal_position_id = fields.Many2one(
+        'account.fiscal.position', string="Posición fiscal",
+        help="Se aplica a las facturas de la suscripción.")
+    payment_term_id = fields.Many2one(
+        'account.payment.term', string="Condiciones de pago")
+    pricelist_id = fields.Many2one(
+        'product.pricelist', string="Tarifa")
     recurring_next_date = fields.Date(
-        string="Próxima factura", tracking=True,
-        help="Fecha en la que se generará la siguiente factura mensual.")
-    last_invoice_date = fields.Date(string="Última factura", readonly=True)
+        related='subscription_id.next_invoice_date', store=True,
+        string="Próxima factura", readonly=True)
 
     invoice_ids = fields.One2many(
         'account.move', 'physio_membership_id', string="Facturas")
@@ -131,15 +135,13 @@ class PhysioMembership(models.Model):
     # ------------------------------------------------------------------
     def action_activate(self):
         for membership in self:
-            if membership.state == 'active':
-                continue
-            vals = {'state': 'active'}
-            if not membership.recurring_next_date:
-                vals['recurring_next_date'] = membership.date_start or \
-                    fields.Date.context_today(membership)
-            if not membership.date_start:
-                vals['date_start'] = fields.Date.context_today(membership)
-            membership.write(vals)
+            if membership.state != 'active':
+                vals = {'state': 'active'}
+                if not membership.date_start:
+                    vals['date_start'] = fields.Date.context_today(membership)
+                membership.write(vals)
+            # Crea/reactiva la suscripción nativa de facturación
+            membership._ensure_subscription()
         # Reserva su plaza en las clases futuras de su grupo
         self._autoenroll_future_sessions()
 
@@ -170,18 +172,25 @@ class PhysioMembership(models.Model):
 
     def action_pause(self):
         self.write({'state': 'paused'})
+        for membership in self.filtered('subscription_id'):
+            if membership.subscription_id.subscription_state == '3_progress':
+                membership.subscription_id.sudo().pause_subscription()
 
     def action_cancel(self):
         self.write({
             'state': 'cancelled',
             'date_end': fields.Date.context_today(self),
         })
-        # Cancela reservas futuras del paciente en su grupo
         for membership in self:
+            # Cancela reservas futuras del paciente en su grupo
             future = membership.booking_ids.filtered(
                 lambda b: b.state == 'booked'
                 and b.session_start and b.session_start >= fields.Datetime.now())
             future.write({'state': 'cancelled'})
+            # Cierra la suscripción nativa
+            if membership.subscription_id and membership.subscription_id.subscription_state in (
+                    '3_progress', '4_paused'):
+                membership.subscription_id.sudo().set_close()
 
     def action_draft(self):
         self.write({'state': 'draft'})
@@ -201,90 +210,70 @@ class PhysioMembership(models.Model):
         }
 
     # ------------------------------------------------------------------
-    # Facturación
+    # Suscripción nativa (facturación recurrente)
     # ------------------------------------------------------------------
-    def _prepare_invoice_vals(self):
+    def _prepare_subscription_vals(self):
         self.ensure_one()
-        if not self.product_id:
-            raise UserError(_(
-                "Configura un producto de cuota en la suscripción %s antes de "
-                "facturar.") % self.name)
-        product = self.product_id
-        line_name = _("Cuota %(group)s - %(month)s") % {
-            'group': self.group_id.name,
-            'month': fields.Date.context_today(self).strftime('%m/%Y'),
-        }
-        return {
-            'move_type': 'out_invoice',
+        product = self.product_id or self.group_id.product_id
+        vals = {
             'partner_id': self.partner_id.id,
-            'invoice_date': fields.Date.context_today(self),
-            'currency_id': self.currency_id.id,
             'company_id': self.company_id.id,
+            'plan_id': self.group_id.subscription_plan_id.id,
             'physio_membership_id': self.id,
-            'invoice_origin': self.name,
-            'invoice_line_ids': [Command.create({
+            'physio_group_id': self.group_id.id,
+            'start_date': self.date_start or fields.Date.context_today(self),
+            'client_order_ref': self.name,
+            'order_line': [Command.create({
                 'product_id': product.id,
-                'name': line_name,
-                'quantity': 1.0,
+                'product_uom_qty': 1,
                 'price_unit': self.price or product.lst_price,
             })],
         }
+        if self.fiscal_position_id:
+            vals['fiscal_position_id'] = self.fiscal_position_id.id
+        if self.payment_term_id:
+            vals['payment_term_id'] = self.payment_term_id.id
+        if self.pricelist_id:
+            vals['pricelist_id'] = self.pricelist_id.id
+        return vals
 
-    def _create_invoice(self, auto_post=True, send_email=True):
-        """Crea (y opcionalmente contabiliza y envía) la factura mensual."""
-        moves = self.env['account.move']
-        template = self.env.ref(
-            'amma_physio_groups.mail_template_physio_invoice',
-            raise_if_not_found=False)
+    def _ensure_subscription(self):
+        """Crea y confirma la suscripción nativa si no existe; si ya existe,
+        la reactiva cuando estaba pausada o cerrada."""
         for membership in self:
-            move = self.env['account.move'].create(
-                membership._prepare_invoice_vals())
-            if auto_post:
-                move.action_post()
-                if send_email and template and membership.partner_id.email:
-                    template.send_mail(
-                        move.id, force_send=False,
-                        email_layout_xmlid='mail.mail_notification_light')
-            membership.last_invoice_date = fields.Date.context_today(membership)
-            moves |= move
-        return moves
+            sub = membership.subscription_id
+            if sub:
+                if sub.subscription_state == '4_paused':
+                    sub.sudo().resume_subscription()
+                elif sub.subscription_state in ('5_renewed', '6_churn'):
+                    sub.sudo().reopen_order()
+                continue
+            group = membership.group_id
+            product = membership.product_id or group.product_id
+            if not group.subscription_plan_id or not product or not product.recurring_invoice:
+                membership.message_post(body=_(
+                    "No se ha creado la suscripción de facturación: revisa que el "
+                    "grupo tenga un <b>plan de suscripción</b> y un <b>producto "
+                    "recurrente</b>."))
+                continue
+            sub = self.env['sale.order'].sudo().create(
+                membership._prepare_subscription_vals())
+            sub.action_confirm()
+            membership.subscription_id = sub.id
+            membership.message_post(body=_(
+                "Suscripción de facturación creada: %s") % sub.name)
 
-    def action_create_invoice_now(self):
-        """Botón: genera la factura del mes al momento."""
-        moves = self._create_invoice(auto_post=True, send_email=True)
-        for membership in self.filtered(lambda m: m.recurring_next_date):
-            if membership.recurring_next_date <= fields.Date.context_today(membership):
-                membership.recurring_next_date += relativedelta(months=1)
-        if len(moves) == 1:
-            return {
-                'type': 'ir.actions.act_window',
-                'res_model': 'account.move',
-                'res_id': moves.id,
-                'view_mode': 'form',
-            }
-        return self.action_view_invoices()
-
-    @api.model
-    def _cron_generate_invoices(self, limit=200):
-        """Cron diario: factura las suscripciones activas vencidas."""
-        today = fields.Date.context_today(self)
-        memberships = self.search([
-            ('state', '=', 'active'),
-            ('auto_invoice', '=', True),
-            ('recurring_next_date', '!=', False),
-            ('recurring_next_date', '<=', today),
-        ], limit=limit)
-        for membership in memberships:
-            try:
-                membership._create_invoice(auto_post=True, send_email=True)
-                membership.recurring_next_date += relativedelta(months=1)
-                self.env.cr.commit()
-            except Exception as error:  # noqa: BLE001
-                _logger.exception(
-                    "Error facturando la suscripción %s: %s",
-                    membership.name, error)
-                self.env.cr.rollback()
-        return True
+    def action_view_subscription(self):
+        self.ensure_one()
+        if not self.subscription_id:
+            return False
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Suscripción"),
+            'res_model': 'sale.order',
+            'res_id': self.subscription_id.id,
+            'view_mode': 'form',
+        }
 
     def action_view_invoices(self):
         self.ensure_one()

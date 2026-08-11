@@ -42,7 +42,12 @@ class PhysioGroup(models.Model):
         'product.product', string="Producto de cuota",
         default=lambda self: self._default_product_id(),
         domain="[('sale_ok', '=', True)]",
-        help="Producto de servicio que se usará en la factura mensual.")
+        help="Producto de servicio (recurrente) que se usará en la suscripción.")
+    subscription_plan_id = fields.Many2one(
+        'sale.subscription.plan', string="Plan de suscripción",
+        default=lambda self: self._default_plan_id(),
+        help="Plan de facturación recurrente (p. ej. mensual) de las "
+             "suscripciones de este grupo.")
     price = fields.Monetary(
         string="Cuota mensual", currency_field='currency_id',
         help="Importe que se factura cada mes a cada paciente del grupo.")
@@ -86,6 +91,12 @@ class PhysioGroup(models.Model):
         product = self.env.ref(
             'amma_physio_groups.product_physio_monthly', raise_if_not_found=False)
         return product.product_variant_id.id if product else False
+
+    @api.model
+    def _default_plan_id(self):
+        plan = self.env.ref(
+            'amma_physio_groups.subscription_plan_monthly', raise_if_not_found=False)
+        return plan.id if plan else False
 
     @api.depends('membership_ids.state', 'session_ids')
     def _compute_counts(self):

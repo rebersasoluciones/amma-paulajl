@@ -8,6 +8,7 @@
         <field name="list_price">50.0</field>
         <field name="sale_ok" eval="True"/>
         <field name="purchase_ok" eval="False"/>
+        <field name="recurring_invoice" eval="True"/>
         <field name="description_sale">Cuota mensual de asistencia a grupo de fisioterapia.</field>
     </record>
 

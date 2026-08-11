@@ -62,10 +62,6 @@
                 <header>
                     <button name="action_activate" type="object" string="Activar"
                             class="oe_highlight" invisible="state == 'active'"/>
-                    <button name="action_create_invoice_now" type="object"
-                            string="Facturar ahora" class="oe_highlight"
-                            invisible="state != 'active'"
-                            confirm="Se generará la factura del mes y se enviará el correo de cobro. ¿Continuar?"/>
                     <button name="action_pause" type="object" string="Pausar"
                             invisible="state != 'active'"/>
                     <button name="action_open_transfer" type="object" string="Cambiar de grupo"
@@ -80,6 +76,13 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <button name="action_view_subscription" type="object"
+                                class="oe_stat_button" icon="fa-refresh"
+                                invisible="not subscription_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Suscripción</span>
+                            </div>
+                        </button>
                         <button name="action_view_invoices" type="object"
                                 class="oe_stat_button" icon="fa-money">
                             <field name="invoice_count" widget="statinfo" string="Facturas"/>
@@ -107,12 +110,16 @@
                         <group string="Fechas">
                             <field name="date_start"/>
                             <field name="date_end" readonly="state != 'cancelled'"/>
-                        </group>
-                        <group string="Facturación recurrente">
-                            <field name="auto_invoice"/>
-                            <field name="recurring_next_date"/>
-                            <field name="last_invoice_date"/>
                             <field name="max_classes_per_month"/>
+                        </group>
+                        <group string="Facturación (suscripción nativa)">
+                            <field name="subscription_id" readonly="1"/>
+                            <field name="subscription_state" readonly="1"
+                                   invisible="not subscription_id"/>
+                            <field name="recurring_next_date"/>
+                            <field name="fiscal_position_id"/>
+                            <field name="payment_term_id"/>
+                            <field name="pricelist_id" groups="product.group_product_pricelist"/>
                         </group>
                     </group>
                     <notebook>
