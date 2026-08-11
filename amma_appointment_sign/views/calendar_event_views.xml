@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_calendar_event_form_sign" model="ir.ui.view">
+        <field name="name">calendar.event.form.sign</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_send_sign_documents" type="object"
+                        string="Enviar documentos" class="btn-secondary"
+                        invisible="not appointment_type_id"
+                        help="Envía al paciente el correo con los documentos a firmar."/>
+                <button name="action_appointment_sign_qr" type="object"
+                        string="Firmar (QR)" class="btn-secondary"
+                        invisible="not appointment_type_id"
+                        help="Muestra el código QR para que el paciente firme en la tablet."/>
+                <button name="action_print_blank_documents" type="object"
+                        string="Imprimir en blanco"
+                        invisible="sign_request_count == 0"/>
+                <button name="action_print_signed_documents" type="object"
+                        string="Imprimir firmado"
+                        invisible="not sign_all_signed"/>
+                <field name="appointment_type_id" invisible="1"/>
+                <field name="sign_request_count" invisible="1"/>
+                <field name="sign_all_signed" invisible="1"/>
+                <field name="sign_documents_sent" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

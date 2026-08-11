@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_appointment_documents" model="mail.template">
+        <field name="name">Cita: documentos a firmar</field>
+        <field name="model_id" ref="calendar.model_calendar_event"/>
+        <field name="subject">Documentos para tu cita · {{ object.appointment_type_id.name or object.name }}</field>
+        <field name="email_from">{{ (object.user_id.email_formatted or object.user_id.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="partner_to">{{ object._appointment_sign_partner().id }}</field>
+        <field name="auto_delete" eval="False"/>
+        <field name="body_html" type="html">
+<div style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#333;">
+    <p>Hola <t t-out="object._appointment_sign_partner().name or ''">Paciente</t>,</p>
+    <p>
+        Para tu cita
+        <strong t-out="object.appointment_type_id.name or object.name or ''">cita</strong>
+        <t t-if="object.start">
+            del <strong t-out="format_datetime(object.start) or ''">fecha</strong>
+        </t>
+        necesitamos que traigas <strong>rellenos y firmados</strong> los siguientes documentos.
+    </p>
+    <p>
+        Puedes <strong>imprimirlos</strong> (los tienes adjuntos a este correo) y traerlos
+        cumplimentados, o <strong>firmarlos online</strong> ahora mismo pulsando en cada botón:
+    </p>
+    <div style="margin:20px 0;">
+        <t t-foreach="object._sign_email_links()" t-as="lnk">
+            <p style="margin:8px 0;">
+                <a t-att-href="lnk['url']"
+                   style="background-color:#00A09D;color:#ffffff;padding:10px 20px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
+                    Firmar: <t t-out="lnk['name']"/>
+                </a>
+            </p>
+        </t>
+    </div>
+    <p style="font-size:13px;color:#888;">
+        Si ya has firmado o vas a traer los documentos en papel, ignora los botones.
+    </p>
+    <p>Gracias,<br/><t t-out="object.user_id.company_id.name or ''">La clínica</t></p>
+</div>
+        </field>
+    </record>
+</odoo>
