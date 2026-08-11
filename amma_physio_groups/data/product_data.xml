@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Producto de servicio usado por defecto para la cuota mensual -->
+    <record id="product_physio_monthly" model="product.template">
+        <field name="name">Cuota mensual fisioterapia</field>
+        <field name="type">service</field>
+        <field name="list_price">50.0</field>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="description_sale">Cuota mensual de asistencia a grupo de fisioterapia.</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_physio_booking_list" model="ir.ui.view">
+        <field name="name">physio.booking.list</field>
+        <field name="model">physio.booking</field>
+        <field name="arch" type="xml">
+            <list string="Reservas" decoration-muted="state == 'cancelled'"
+                  decoration-success="state == 'attended'" decoration-danger="state == 'no_show'">
+                <field name="session_start" string="Clase"/>
+                <field name="group_id"/>
+                <field name="partner_id"/>
+                <field name="is_cross_booking" optional="show"/>
+                <field name="state" widget="badge"/>
+                <button name="action_set_attended" type="object" string="Asistió"
+                        icon="fa-check" invisible="state != 'booked'"/>
+                <button name="action_set_no_show" type="object" string="No asistió"
+                        icon="fa-times" invisible="state != 'booked'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_physio_booking_search" model="ir.ui.view">
+        <field name="name">physio.booking.search</field>
+        <field name="model">physio.booking</field>
+        <field name="arch" type="xml">
+            <search string="Reservas">
+                <field name="partner_id"/>
+                <field name="group_id"/>
+                <field name="session_id"/>
+                <filter string="Reservadas" name="booked" domain="[('state', '=', 'booked')]"/>
+                <filter string="Asistió" name="attended" domain="[('state', '=', 'attended')]"/>
+                <filter string="No asistió" name="no_show" domain="[('state', '=', 'no_show')]"/>
+                <filter string="Reservas de otro grupo" name="cross" domain="[('is_cross_booking', '=', True)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Paciente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_physio_booking" model="ir.actions.act_window">
+        <field name="name">Reservas / Asistencia</field>
+        <field name="res_model">physio.booking</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_physio_booking_search"/>
+    </record>
+
+</odoo>

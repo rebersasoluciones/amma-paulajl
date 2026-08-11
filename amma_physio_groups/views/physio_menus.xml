@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_physio_root" name="Fisioterapia"
+              web_icon="amma_physio_groups,static/description/icon.png"
+              sequence="45" groups="group_physio_user"/>
+
+    <menuitem id="menu_physio_patients" name="Pacientes"
+              parent="menu_physio_root" action="action_physio_patient"
+              sequence="10"/>
+
+    <menuitem id="menu_physio_groups" name="Grupos"
+              parent="menu_physio_root" action="action_physio_group"
+              sequence="20"/>
+
+    <menuitem id="menu_physio_classes_root" name="Clases"
+              parent="menu_physio_root" sequence="30"/>
+    <menuitem id="menu_physio_classes" name="Calendario de clases"
+              parent="menu_physio_classes_root" action="action_physio_session"
+              sequence="10"/>
+    <menuitem id="menu_physio_bookings" name="Reservas / Asistencia"
+              parent="menu_physio_classes_root" action="action_physio_booking"
+              sequence="20"/>
+
+    <menuitem id="menu_physio_memberships" name="Suscripciones"
+              parent="menu_physio_root" action="action_physio_membership"
+              sequence="40"/>
+
+    <menuitem id="menu_physio_payments" name="Cobros"
+              parent="menu_physio_root" action="action_physio_payments"
+              sequence="50"/>
+
+    <menuitem id="menu_physio_config" name="Configuración"
+              parent="menu_physio_root" sequence="90"
+              groups="group_physio_manager"/>
+    <menuitem id="menu_physio_config_products" name="Productos de cuota"
+              parent="menu_physio_config" action="product.product_template_action"
+              sequence="10"/>
+
+</odoo>

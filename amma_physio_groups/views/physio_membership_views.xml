@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== LISTA ==================== -->
+    <record id="view_physio_membership_list" model="ir.ui.view">
+        <field name="name">physio.membership.list</field>
+        <field name="model">physio.membership</field>
+        <field name="arch" type="xml">
+            <list string="Suscripciones" decoration-muted="state == 'cancelled'"
+                  decoration-info="state == 'draft'" decoration-warning="state == 'paused'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="group_id"/>
+                <field name="price" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="recurring_next_date"/>
+                <field name="amount_due" widget="monetary" optional="show"/>
+                <field name="invoice_count" string="Facturas" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'active'"
+                       decoration-warning="state == 'paused'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ==================== KANBAN ==================== -->
+    <record id="view_physio_membership_kanban" model="ir.ui.view">
+        <field name="name">physio.membership.kanban</field>
+        <field name="model">physio.membership</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="group_id">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record_top">
+                            <strong><field name="partner_id"/></strong>
+                        </div>
+                        <div class="text-muted"><field name="name"/></div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <field name="state" widget="label_selection"
+                                   options="{'classes': {'draft': 'default', 'active': 'success', 'paused': 'warning', 'cancelled': 'danger'}}"/>
+                            <span><field name="price" widget="monetary"/>/mes</span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ==================== FORMULARIO ==================== -->
+    <record id="view_physio_membership_form" model="ir.ui.view">
+        <field name="name">physio.membership.form</field>
+        <field name="model">physio.membership</field>
+        <field name="arch" type="xml">
+            <form string="Suscripción">
+                <header>
+                    <button name="action_activate" type="object" string="Activar"
+                            class="oe_highlight" invisible="state == 'active'"/>
+                    <button name="action_create_invoice_now" type="object"
+                            string="Facturar ahora" class="oe_highlight"
+                            invisible="state != 'active'"
+                            confirm="Se generará la factura del mes y se enviará el correo de cobro. ¿Continuar?"/>
+                    <button name="action_pause" type="object" string="Pausar"
+                            invisible="state != 'active'"/>
+                    <button name="action_open_transfer" type="object" string="Cambiar de grupo"
+                            invisible="state in ('draft', 'cancelled')"/>
+                    <button name="action_cancel" type="object" string="Dar de baja"
+                            invisible="state == 'cancelled'"
+                            confirm="Se dará de baja la suscripción y se cancelarán las reservas futuras. ¿Continuar?"/>
+                    <button name="action_draft" type="object" string="A borrador"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,paused"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object"
+                                class="oe_stat_button" icon="fa-money">
+                            <field name="invoice_count" widget="statinfo" string="Facturas"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"
+                                   context="{'default_is_physio_patient': True}"/>
+                            <field name="group_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="price" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount_due" widget="monetary"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Fechas">
+                            <field name="date_start"/>
+                            <field name="date_end" readonly="state != 'cancelled'"/>
+                        </group>
+                        <group string="Facturación recurrente">
+                            <field name="auto_invoice"/>
+                            <field name="recurring_next_date"/>
+                            <field name="last_invoice_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Facturas" name="invoices">
+                            <field name="invoice_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="invoice_date"/>
+                                    <field name="amount_total" widget="monetary"/>
+                                    <field name="amount_residual" widget="monetary" string="Pendiente"/>
+                                    <field name="payment_state" widget="badge"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notas" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== SEARCH ==================== -->
+    <record id="view_physio_membership_search" model="ir.ui.view">
+        <field name="name">physio.membership.search</field>
+        <field name="model">physio.membership</field>
+        <field name="arch" type="xml">
+            <search string="Suscripciones">
+                <field name="partner_id"/>
+                <field name="group_id"/>
+                <field name="name"/>
+                <filter string="Activas" name="active" domain="[('state', '=', 'active')]"/>
+                <filter string="Pausadas" name="paused" domain="[('state', '=', 'paused')]"/>
+                <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Con importe pendiente" name="due" domain="[('amount_due', '&gt;', 0)]"/>
+                <separator/>
+                <filter string="Por facturar" name="to_invoice"
+                        domain="[('state', '=', 'active'), ('recurring_next_date', '&lt;=', context_today())]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Grupo" name="group_group" context="{'group_by': 'group_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Paciente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== ACCIONES ==================== -->
+    <record id="action_physio_membership" model="ir.actions.act_window">
+        <field name="name">Suscripciones</field>
+        <field name="res_model">physio.membership</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_physio_membership_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Da de alta la primera suscripción</p>
+            <p>Cada suscripción vincula un paciente a un grupo y genera su cuota mensual.</p>
+        </field>
+    </record>
+
+</odoo>

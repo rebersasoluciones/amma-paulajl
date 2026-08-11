@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_physio_group_user,physio.group user,model_physio_group,group_physio_user,1,1,1,1
+access_physio_group_schedule_user,physio.group.schedule user,model_physio_group_schedule,group_physio_user,1,1,1,1
+access_physio_session_user,physio.session user,model_physio_session,group_physio_user,1,1,1,1
+access_physio_booking_user,physio.booking user,model_physio_booking,group_physio_user,1,1,1,1
+access_physio_membership_user,physio.membership user,model_physio_membership,group_physio_user,1,1,1,1
+access_physio_session_generate_user,physio.session.generate user,model_physio_session_generate,group_physio_user,1,1,1,1
+access_physio_membership_transfer_user,physio.membership.transfer user,model_physio_membership_transfer,group_physio_user,1,1,1,1
+access_physio_group_portal,physio.group portal,model_physio_group,base.group_portal,1,0,0,0
+access_physio_group_schedule_portal,physio.group.schedule portal,model_physio_group_schedule,base.group_portal,1,0,0,0
+access_physio_session_portal,physio.session portal,model_physio_session,base.group_portal,1,0,0,0
+access_physio_booking_portal,physio.booking portal,model_physio_booking,base.group_portal,1,0,0,0
+access_physio_membership_portal,physio.membership portal,model_physio_membership,base.group_portal,1,0,0,0

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== LISTA ==================== -->
+    <record id="view_physio_group_list" model="ir.ui.view">
+        <field name="name">physio.group.list</field>
+        <field name="model">physio.group</field>
+        <field name="arch" type="xml">
+            <list string="Grupos">
+                <field name="name"/>
+                <field name="instructor_id" optional="show"/>
+                <field name="capacity"/>
+                <field name="duration" widget="float_time"/>
+                <field name="active_member_count" string="Pacientes"/>
+                <field name="price" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="allow_self_booking" optional="hide"/>
+                <field name="allow_cross_booking" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ==================== KANBAN ==================== -->
+    <record id="view_physio_group_kanban" model="ir.ui.view">
+        <field name="name">physio.group.kanban</field>
+        <field name="model">physio.group</field>
+        <field name="arch" type="xml">
+            <kanban highlight_color="color">
+                <field name="active_member_count"/>
+                <field name="session_count"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_content">
+                            <div class="o_kanban_record_top mb-2">
+                                <strong class="o_kanban_record_title fs-5">
+                                    <field name="name"/>
+                                </strong>
+                            </div>
+                            <div class="text-muted">
+                                <field name="instructor_id"/>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <span><i class="fa fa-users"/> <field name="active_member_count"/> pacientes</span>
+                                <span><field name="price" widget="monetary"/>/mes</span>
+                            </div>
+                            <div class="mt-1 text-muted">
+                                <i class="fa fa-calendar"/> <field name="session_count"/> clases
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ==================== FORMULARIO ==================== -->
+    <record id="view_physio_group_form" model="ir.ui.view">
+        <field name="name">physio.group.form</field>
+        <field name="model">physio.group</field>
+        <field name="arch" type="xml">
+            <form string="Grupo">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_members" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="active_member_count" widget="statinfo"
+                                   string="Pacientes"/>
+                        </button>
+                        <button name="action_view_sessions" type="object"
+                                class="oe_stat_button" icon="fa-calendar">
+                            <field name="session_count" widget="statinfo"
+                                   string="Clases"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" text="Archivado" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <field name="color" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="p. ej. Suelo pélvico - Mañanas"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="instructor_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="capacity"/>
+                            <field name="duration" widget="float_time"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Horario semanal" name="schedule">
+                            <field name="schedule_line_ids">
+                                <list editable="bottom">
+                                    <field name="weekday"/>
+                                    <field name="start_time" widget="float_time"/>
+                                    <field name="duration" widget="float_time"/>
+                                    <field name="capacity"/>
+                                </list>
+                            </field>
+                            <button name="action_open_generate_sessions" type="object"
+                                    string="Generar clases" class="btn-secondary mt-2"
+                                    icon="fa-calendar-plus-o"/>
+                        </page>
+                        <page string="Facturación" name="billing">
+                            <group>
+                                <field name="product_id"/>
+                                <field name="price" widget="monetary"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </page>
+                        <page string="Portal / Reservas" name="portal">
+                            <group>
+                                <group>
+                                    <field name="auto_enroll"/>
+                                    <field name="allow_self_booking"/>
+                                    <field name="allow_cross_booking"/>
+                                </group>
+                                <group>
+                                    <field name="booking_cutoff_hours"/>
+                                </group>
+                            </group>
+                            <p class="text-muted">
+                                Con <b>Plaza asignada automática</b>, cada paciente del grupo
+                                queda apuntado a todas las clases sin tener que reservar. Puede
+                                anular su asistencia (y liberar su plaza) o apuntarse a otra clase
+                                respetando la <b>antelación mínima</b> configurada.
+                            </p>
+                        </page>
+                        <page string="Descripción" name="description">
+                            <field name="description" placeholder="Objetivos, indicaciones, material..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== SEARCH ==================== -->
+    <record id="view_physio_group_search" model="ir.ui.view">
+        <field name="name">physio.group.search</field>
+        <field name="model">physio.group</field>
+        <field name="arch" type="xml">
+            <search string="Grupos">
+                <field name="name"/>
+                <field name="instructor_id"/>
+                <filter string="Auto-gestión activa" name="self_booking"
+                        domain="[('allow_self_booking', '=', True)]"/>
+                <filter string="Reservas cruzadas" name="cross_booking"
+                        domain="[('allow_cross_booking', '=', True)]"/>
+                <separator/>
+                <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Fisioterapeuta" name="group_instructor"
+                            context="{'group_by': 'instructor_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== ACCIÓN ==================== -->
+    <record id="action_physio_group" model="ir.actions.act_window">
+        <field name="name">Grupos</field>
+        <field name="res_model">physio.group</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_physio_group_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Crea tu primer grupo</p>
+            <p>Define el horario semanal, la capacidad y la cuota mensual de cada grupo.</p>
+        </field>
+    </record>
+
+</odoo>

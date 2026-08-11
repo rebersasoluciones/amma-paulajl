@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== PACIENTES ==================== -->
+    <record id="demo_patient_ana" model="res.partner">
+        <field name="name">Ana Martín</field>
+        <field name="is_physio_patient" eval="True"/>
+        <field name="is_company" eval="False"/>
+        <field name="phone">+34 600 111 222</field>
+        <field name="email">ana.martin@example.com</field>
+    </record>
+
+    <record id="demo_patient_carlos" model="res.partner">
+        <field name="name">Carlos Ruiz</field>
+        <field name="is_physio_patient" eval="True"/>
+        <field name="is_company" eval="False"/>
+        <field name="phone">+34 600 333 444</field>
+        <field name="email">carlos.ruiz@example.com</field>
+    </record>
+
+    <record id="demo_patient_lucia" model="res.partner">
+        <field name="name">Lucía Gómez</field>
+        <field name="is_physio_patient" eval="True"/>
+        <field name="is_company" eval="False"/>
+        <field name="phone">+34 600 555 666</field>
+        <field name="email">lucia.gomez@example.com</field>
+    </record>
+
+    <!-- ==================== GRUPOS ==================== -->
+    <record id="demo_group_pelvic" model="physio.group">
+        <field name="name">Suelo pélvico · Mañanas</field>
+        <field name="code">PELVIC-AM</field>
+        <field name="capacity">6</field>
+        <field name="duration">1.0</field>
+        <field name="price">50.0</field>
+        <field name="allow_self_booking" eval="True"/>
+        <field name="allow_cross_booking" eval="True"/>
+        <field name="description">Reeducación de suelo pélvico en grupo reducido.</field>
+    </record>
+    <record id="demo_sched_pelvic_1" model="physio.group.schedule">
+        <field name="group_id" ref="demo_group_pelvic"/>
+        <field name="weekday">0</field>
+        <field name="start_time">9.0</field>
+    </record>
+    <record id="demo_sched_pelvic_2" model="physio.group.schedule">
+        <field name="group_id" ref="demo_group_pelvic"/>
+        <field name="weekday">2</field>
+        <field name="start_time">9.0</field>
+    </record>
+
+    <record id="demo_group_back" model="physio.group">
+        <field name="name">Espalda sana · Tardes</field>
+        <field name="code">BACK-PM</field>
+        <field name="capacity">8</field>
+        <field name="duration">1.0</field>
+        <field name="price">45.0</field>
+        <field name="allow_self_booking" eval="True"/>
+        <field name="allow_cross_booking" eval="False"/>
+        <field name="description">Higiene postural y fortalecimiento de la espalda.</field>
+    </record>
+    <record id="demo_sched_back_1" model="physio.group.schedule">
+        <field name="group_id" ref="demo_group_back"/>
+        <field name="weekday">1</field>
+        <field name="start_time">18.0</field>
+    </record>
+    <record id="demo_sched_back_2" model="physio.group.schedule">
+        <field name="group_id" ref="demo_group_back"/>
+        <field name="weekday">3</field>
+        <field name="start_time">18.0</field>
+    </record>
+
+    <!-- ==================== CLASES (próximos días) ==================== -->
+    <record id="demo_session_pelvic_1" model="physio.session">
+        <field name="group_id" ref="demo_group_pelvic"/>
+        <field name="capacity">6</field>
+        <field name="duration">1.0</field>
+        <field name="start_datetime"
+               eval="(datetime.datetime.now() + datetime.timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)"/>
+    </record>
+    <record id="demo_session_pelvic_2" model="physio.session">
+        <field name="group_id" ref="demo_group_pelvic"/>
+        <field name="capacity">6</field>
+        <field name="duration">1.0</field>
+        <field name="start_datetime"
+               eval="(datetime.datetime.now() + datetime.timedelta(days=3)).replace(hour=9, minute=0, second=0, microsecond=0)"/>
+    </record>
+    <record id="demo_session_back_1" model="physio.session">
+        <field name="group_id" ref="demo_group_back"/>
+        <field name="capacity">8</field>
+        <field name="duration">1.0</field>
+        <field name="start_datetime"
+               eval="(datetime.datetime.now() + datetime.timedelta(days=2)).replace(hour=18, minute=0, second=0, microsecond=0)"/>
+    </record>
+
+    <!-- ==================== SUSCRIPCIONES ==================== -->
+    <record id="demo_membership_ana" model="physio.membership">
+        <field name="partner_id" ref="demo_patient_ana"/>
+        <field name="group_id" ref="demo_group_pelvic"/>
+        <field name="price">50.0</field>
+        <field name="state">active</field>
+        <field name="recurring_next_date" eval="datetime.date.today()"/>
+    </record>
+    <record id="demo_membership_carlos" model="physio.membership">
+        <field name="partner_id" ref="demo_patient_carlos"/>
+        <field name="group_id" ref="demo_group_back"/>
+        <field name="price">45.0</field>
+        <field name="state">active</field>
+        <field name="recurring_next_date" eval="datetime.date.today()"/>
+    </record>
+    <record id="demo_membership_lucia" model="physio.membership">
+        <field name="partner_id" ref="demo_patient_lucia"/>
+        <field name="group_id" ref="demo_group_pelvic"/>
+        <field name="price">50.0</field>
+        <field name="state">active</field>
+        <field name="recurring_next_date" eval="datetime.date.today()"/>
+    </record>
+
+    <!-- ==================== RESERVA DE EJEMPLO ==================== -->
+    <record id="demo_booking_ana" model="physio.booking">
+        <field name="session_id" ref="demo_session_pelvic_1"/>
+        <field name="partner_id" ref="demo_patient_ana"/>
+        <field name="membership_id" ref="demo_membership_ana"/>
+        <field name="state">booked</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_physio_membership_transfer_form" model="ir.ui.view">
+        <field name="name">physio.membership.transfer.form</field>
+        <field name="model">physio.membership.transfer</field>
+        <field name="arch" type="xml">
+            <form string="Cambiar de grupo">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>Cambiar al paciente de grupo</h2>
+                    </div>
+                    <group>
+                        <field name="membership_id" invisible="1"/>
+                        <field name="partner_id" readonly="1"/>
+                        <field name="current_group_id" readonly="1"/>
+                        <field name="new_group_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="update_price"/>
+                        <field name="cancel_future_bookings"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_transfer" type="object" string="Cambiar de grupo"
+                            class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

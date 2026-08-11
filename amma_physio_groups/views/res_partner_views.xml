@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Botón inteligente + campo "Es paciente" en el contacto -->
+    <record id="view_partner_form_physio" model="ir.ui.view">
+        <field name="name">res.partner.form.physio</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_physio_memberships" type="object"
+                        class="oe_stat_button" icon="fa-heartbeat"
+                        invisible="physio_membership_count == 0">
+                    <field name="physio_membership_count" widget="statinfo"
+                           string="Suscripciones"/>
+                </button>
+            </div>
+            <field name="vat" position="after">
+                <field name="is_physio_patient"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Vista lista sencilla para dar de alta pacientes -->
+    <record id="view_partner_patient_list" model="ir.ui.view">
+        <field name="name">res.partner.patient.list</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list string="Pacientes">
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="mobile" optional="show"/>
+                <field name="email"/>
+                <field name="physio_active_group_ids" widget="many2many_tags" string="Grupos"/>
+                <field name="physio_membership_count" string="Suscripciones"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_partner_patient_search" model="ir.ui.view">
+        <field name="name">res.partner.patient.search</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <search string="Pacientes">
+                <field name="name" filter_domain="['|','|',('name','ilike',self),('phone','ilike',self),('email','ilike',self)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_physio_patient" model="ir.actions.act_window">
+        <field name="name">Pacientes</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('is_physio_patient', '=', True)]</field>
+        <field name="context">{'default_is_physio_patient': True, 'default_is_company': False}</field>
+        <field name="search_view_id" ref="view_partner_patient_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Da de alta tu primer paciente</p>
+            <p>Registra nombre, teléfono y correo. Los pacientes se guardan como contactos.</p>
+        </field>
+    </record>
+
+    <!-- Forzar la lista simplificada en la acción de pacientes -->
+    <record id="action_physio_patient_list_view" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_partner_patient_list"/>
+        <field name="act_window_id" ref="action_physio_patient"/>
+    </record>
+
+</odoo>
