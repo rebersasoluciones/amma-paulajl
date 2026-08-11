@@ -37,6 +37,7 @@ de citas presenciales.
         'data/mail_template_data.xml',
         'views/appointment_type_views.xml',
         'views/calendar_event_views.xml',
+        'views/sign_request_views.xml',
         'views/sign_qr_templates.xml',
         'wizards/appointment_sign_qr_views.xml',
     ],

@@ -70,6 +70,7 @@ class CalendarEvent(models.Model):
                         'mail_sent_order': 1,
                     })],
                     'reference_doc': "%s,%s" % (event._name, event.id),
+                    'calendar_event_id': event.id,
                 })
                 event.sign_request_ids = [Command.link(request.id)]
         return self.sign_request_ids
