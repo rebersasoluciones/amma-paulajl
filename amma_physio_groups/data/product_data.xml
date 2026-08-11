@@ -5,7 +5,6 @@
     <record id="product_physio_monthly" model="product.template">
         <field name="name">Cuota mensual fisioterapia</field>
         <field name="type">service</field>
-        <field name="invoice_policy">order</field>
         <field name="list_price">50.0</field>
         <field name="sale_ok" eval="True"/>
         <field name="purchase_ok" eval="False"/>

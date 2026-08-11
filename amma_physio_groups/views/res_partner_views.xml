@@ -43,7 +43,6 @@
         <field name="arch" type="xml">
             <search string="Pacientes">
                 <field name="name" filter_domain="['|','|',('name','ilike',self),('phone','ilike',self),('email','ilike',self)]"/>
-                <field name="physio_active_group_ids" string="Grupo"/>
             </search>
         </field>
     </record>
