@@ -62,6 +62,9 @@
                 <header>
                     <button name="action_activate" type="object" string="Activar"
                             class="oe_highlight" invisible="state == 'active'"/>
+                    <button name="action_activate" type="object"
+                            string="Crear suscripción de facturación" class="oe_highlight"
+                            invisible="state != 'active' or subscription_id"/>
                     <button name="action_pause" type="object" string="Pausar"
                             invisible="state != 'active'"/>
                     <button name="action_open_transfer" type="object" string="Cambiar de grupo"
