@@ -2,6 +2,7 @@
 import logging
 
 from odoo import _, Command, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -36,24 +37,47 @@ class CalendarEvent(models.Model):
         return atype.sign_template_ids if atype else self.env['sign.template']
 
     def _appointment_sign_partner(self):
-        """Devuelve el paciente (asistente que no es el organizador)."""
+        """Devuelve el paciente: el asistente que no es el organizador y,
+        preferiblemente, que no es un usuario interno (personal)."""
         self.ensure_one()
         organizer = self.user_id.partner_id
-        candidates = self.partner_ids.filtered(lambda p: p != organizer)
-        return candidates[:1] or self.partner_ids[:1]
+        externals = self.partner_ids.filtered(
+            lambda p: p != organizer and not p.user_ids)
+        if externals:
+            return externals[:1]
+        others = self.partner_ids.filtered(lambda p: p != organizer)
+        return others[:1] or self.partner_ids[:1]
 
-    def _ensure_sign_requests(self):
+    def _ensure_sign_requests(self, raise_if_missing=False):
         """Crea las solicitudes de firma que falten (una por documento) para el
-        paciente, sin enviar el correo nativo de Firma (usamos el nuestro)."""
+        paciente, sin enviar el correo nativo de Firma (usamos el nuestro).
+
+        Con raise_if_missing=True (botones), avisa del motivo si no se puede."""
         SignRequest = self.env['sign.request'].sudo()
         default_role = self.env.ref(
             'sign.sign_item_role_default', raise_if_not_found=False)
         for event in self:
             templates = event._appointment_sign_templates()
             if not templates:
+                if raise_if_missing:
+                    raise UserError(_(
+                        "El tipo de cita «%s» no tiene documentos a firmar "
+                        "configurados. Añádelos en Citas → Tipo de cita.")
+                        % (event.appointment_type_id.name or _("(sin tipo)")))
                 continue
             partner = event._appointment_sign_partner()
-            if not partner or not partner.email:
+            if not partner:
+                if raise_if_missing:
+                    raise UserError(_(
+                        "La cita no tiene ningún paciente (asistente) al que pedir "
+                        "la firma. Añade el contacto del paciente a la cita."))
+                continue
+            if not partner.email:
+                if raise_if_missing:
+                    raise UserError(_(
+                        "El paciente «%s» no tiene correo electrónico, necesario "
+                        "para la firma. Añádelo en su ficha de contacto.")
+                        % partner.name)
                 continue
             existing_templates = event.sign_request_ids.mapped('template_id')
             for template in templates - existing_templates:
@@ -123,14 +147,16 @@ class CalendarEvent(models.Model):
                 })
         return attachments
 
-    def _send_appointment_sign_documents(self):
+    def _send_appointment_sign_documents(self, raise_if_missing=False):
         template = self.env.ref(
             'amma_appointment_sign.mail_template_appointment_documents',
             raise_if_not_found=False)
         for event in self:
             if not event._appointment_sign_templates():
+                if raise_if_missing:
+                    event._ensure_sign_requests(raise_if_missing=True)
                 continue
-            event._ensure_sign_requests()
+            event._ensure_sign_requests(raise_if_missing=raise_if_missing)
             if not event.sign_request_ids:
                 continue
             partner = event._appointment_sign_partner()
@@ -143,8 +169,17 @@ class CalendarEvent(models.Model):
             event.sign_documents_sent = True
 
     def action_send_sign_documents(self):
-        self._send_appointment_sign_documents()
-        return True
+        self.ensure_one()
+        self._send_appointment_sign_documents(raise_if_missing=True)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'type': 'success',
+                'message': _("Documentos enviados al paciente."),
+                'sticky': False,
+            },
+        }
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -162,12 +197,28 @@ class CalendarEvent(models.Model):
                     "%s: %s", event.id, error)
         return events
 
+    def write(self, vals):
+        res = super().write(vals)
+        if 'appointment_type_id' in vals:
+            for event in self:
+                atype = event.appointment_type_id
+                if not (atype and atype.sign_auto_send
+                        and atype.sign_template_ids and not event.sign_documents_sent):
+                    continue
+                try:
+                    event._send_appointment_sign_documents()
+                except Exception as error:  # noqa: BLE001
+                    _logger.warning(
+                        "No se pudieron enviar los documentos de firma de la "
+                        "cita %s: %s", event.id, error)
+        return res
+
     # ------------------------------------------------------------------
     # Acciones de la ficha
     # ------------------------------------------------------------------
     def action_appointment_sign_qr(self):
         self.ensure_one()
-        self._ensure_sign_requests()
+        self._ensure_sign_requests(raise_if_missing=True)
         if not self.sign_request_ids:
             return False
         Line = self.env['appointment.sign.qr.line']
@@ -199,7 +250,7 @@ class CalendarEvent(models.Model):
     def action_appointment_sign_qr_fullscreen(self):
         """Abre la página kiosco a pantalla completa con el QR para la tablet."""
         self.ensure_one()
-        self._ensure_sign_requests()
+        self._ensure_sign_requests(raise_if_missing=True)
         return {
             'type': 'ir.actions.act_url',
             'url': '/appointment/sign/qr/%s' % self.id,
