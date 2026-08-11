@@ -14,9 +14,12 @@ estilo WODBUSTER**.
 - **Clases**: vistas *calendario / kanban / lista*. Ocupación en tiempo real
   (plazas ocupadas / libres) y lista de pacientes por clase con control de
   asistencia (asistió / no asistió).
-- **Suscripciones**: vinculan paciente ↔ grupo con **facturación mensual
-  automática**. Estados borrador / activa / pausada / cancelada. Cambio de grupo
-  con un asistente que mantiene la suscripción.
+- **Suscripciones**: vinculan paciente ↔ grupo. Al activarse crean una
+  **suscripción nativa de Odoo** (`sale_subscription`) que gestiona la
+  **facturación recurrente** (fecha de inicio, posición fiscal, condiciones de
+  pago, tarifa) y el pago sobre la factura. Estados borrador / activa / pausada /
+  cancelada, sincronizados con la suscripción nativa. Cambio de grupo con un
+  asistente. Tope de clases al mes por paciente.
 - **Cobros**: al facturar se envía un correo con un botón **“Pagar ahora”** que
   lleva al portal para pagar con los métodos de pago activos. Panel *Cobros* para
   **generar enlaces de pago al momento** o **registrar pago en efectivo/banco**.
@@ -45,7 +48,8 @@ Ruta `/my/physio` (tarjeta también en `/my/home`):
 | `physio.group.schedule` | Franja del horario semanal |
 | `physio.session` | Clase concreta (fecha/hora) con control de plazas |
 | `physio.booking` | Reserva / asistencia de un paciente a una clase |
-| `physio.membership` | Suscripción mensual paciente ↔ grupo |
+| `physio.membership` | Suscripción paciente ↔ grupo (respaldada por una suscripción nativa) |
+| `sale.order` (ext.) | Suscripción nativa de facturación + enlace al grupo/paciente |
 | `res.partner` (ext.) | Marca de paciente y sus suscripciones |
 | `account.move` (ext.) | Enlace a la suscripción + acciones de cobro |
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Plan de suscripción mensual usado por defecto en los grupos -->
+    <record id="subscription_plan_monthly" model="sale.subscription.plan">
+        <field name="name">Mensual (fisioterapia)</field>
+        <field name="billing_period_value">1</field>
+        <field name="billing_period_unit">month</field>
+        <field name="invoice_mail_template_id" ref="mail_template_physio_invoice"/>
+    </record>
+
+</odoo>

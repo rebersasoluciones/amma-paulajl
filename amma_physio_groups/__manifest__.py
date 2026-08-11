@@ -38,6 +38,7 @@ Módulo profesional para clínicas de fisioterapia que trabajan por grupos/clase
         'account_payment',
         'portal',
         'website',
+        'sale_subscription',
     ],
     'data': [
         'security/physio_security.xml',
@@ -45,6 +46,7 @@ Módulo profesional para clínicas de fisioterapia que trabajan por grupos/clase
         'data/ir_sequence_data.xml',
         'data/product_data.xml',
         'data/mail_template_data.xml',
+        'data/subscription_data.xml',
         'data/ir_cron_data.xml',
         'wizards/physio_session_generate_views.xml',
         'wizards/physio_membership_transfer_views.xml',
