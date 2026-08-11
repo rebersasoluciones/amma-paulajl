@@ -42,6 +42,8 @@ class PhysioMembershipTransfer(models.TransientModel):
                 self.new_group_id.product_id.lst_price
                 if self.new_group_id.product_id else membership.price)
         membership.write(vals)
+        # Reserva su plaza en las clases futuras del nuevo grupo
+        membership._autoenroll_future_sessions()
         membership.message_post(body=_(
             "Cambio de grupo: <b>%(old)s</b> → <b>%(new)s</b>.") % {
                 'old': old_group.name, 'new': self.new_group_id.name})

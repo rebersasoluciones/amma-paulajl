@@ -23,11 +23,20 @@ estilo WODBUSTER**.
 
 ### Portal del paciente (estilo WODBUSTER)
 Ruta `/my/physio` (tarjeta también en `/my/home`):
+- **Plaza asignada automática**: el paciente aparece ya apuntado a todas las clases
+  de su grupo, sin tener que reservar (opción `auto_enroll` del grupo).
 - Ver a qué **grupo(s)** está suscrito y su horario habitual.
-- Ver sus **próximas clases** y **desapuntarse**.
-- Ver **clases disponibles** y **apuntarse**, incluidas clases de **otros grupos**
-  cuando el grupo destino lo permite y hay plazas libres.
-- Ver y **pagar** las cuotas pendientes.
+- **“No puedo asistir”**: anula su asistencia a un día y **libera su plaza** para
+  que otro paciente pueda ocuparla.
+- Ver **clases disponibles** (con las **plazas libres** de cada una) y **apuntarse**,
+  incluidas clases de **otros grupos** cuando el destino lo permite y hay hueco.
+- **Antelación mínima** configurable por grupo (por defecto **24h**): fuera de ese
+  plazo ya no se puede anular ni apuntarse desde el portal.
+- Ver y **pagar** las cuotas pendientes (pago **nativo** sobre la factura).
+
+> **Cuota por paciente**: la cuota mensual es la del grupo por defecto, pero cada
+> suscripción tiene su propio importe editable para pacientes con condiciones
+> especiales.
 
 ## Modelo de datos
 | Modelo | Descripción |

@@ -25,6 +25,16 @@ class PhysioBooking(models.Model):
         string="Reserva de otro grupo",
         help="La reserva se ha hecho en una clase que no es la del grupo "
              "habitual del paciente.")
+    cutoff_locked = fields.Boolean(
+        string="Fuera de plazo", compute='_compute_cutoff_locked',
+        help="La clase está dentro del plazo de antelación mínima y ya no puede "
+             "gestionarse desde el portal.")
+
+    @api.depends('session_start', 'session_id.booking_cutoff_hours')
+    def _compute_cutoff_locked(self):
+        for booking in self:
+            booking.cutoff_locked = bool(booking.session_id) and \
+                booking.session_id._is_within_cutoff()
 
     state = fields.Selection([
         ('booked', "Reservada"),

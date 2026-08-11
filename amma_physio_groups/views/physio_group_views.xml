@@ -114,9 +114,21 @@
                         </page>
                         <page string="Portal / Reservas" name="portal">
                             <group>
-                                <field name="allow_self_booking"/>
-                                <field name="allow_cross_booking"/>
+                                <group>
+                                    <field name="auto_enroll"/>
+                                    <field name="allow_self_booking"/>
+                                    <field name="allow_cross_booking"/>
+                                </group>
+                                <group>
+                                    <field name="booking_cutoff_hours"/>
+                                </group>
                             </group>
+                            <p class="text-muted">
+                                Con <b>Plaza asignada automática</b>, cada paciente del grupo
+                                queda apuntado a todas las clases sin tener que reservar. Puede
+                                anular su asistencia (y liberar su plaza) o apuntarse a otra clase
+                                respetando la <b>antelación mínima</b> configurada.
+                            </p>
                         </page>
                         <page string="Descripción" name="description">
                             <field name="description" placeholder="Objetivos, indicaciones, material..."/>

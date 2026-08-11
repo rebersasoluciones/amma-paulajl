@@ -63,6 +63,8 @@ class PhysioPortal(CustomerPortal):
                 continue
             if session.seats_available <= 0:
                 continue
+            if session._is_within_cutoff():
+                continue
             own = session.group_id.id in my_group_ids
             if own and session.group_id.allow_self_booking:
                 result |= session
@@ -117,6 +119,10 @@ class PhysioPortal(CustomerPortal):
         if not allowed:
             return request.redirect('/my/physio?booking_error=1')
 
+        # Regla de antelación mínima (p. ej. 24h antes de la clase)
+        if session.sudo()._is_within_cutoff():
+            return request.redirect('/my/physio?cutoff_error=1')
+
         # Membresía de referencia (la del grupo si existe, si no la primera activa)
         membership = memberships.filtered(
             lambda m: m.group_id == session.group_id)[:1] or memberships[:1]
@@ -140,5 +146,8 @@ class PhysioPortal(CustomerPortal):
             return request.redirect('/my/physio?booking_error=1')
         if booking.session_start and booking.session_start < fields.Datetime.now():
             return request.redirect('/my/physio?booking_error=1')
+        # Regla de antelación mínima (p. ej. 24h antes de la clase)
+        if booking.session_id.sudo()._is_within_cutoff():
+            return request.redirect('/my/physio?cutoff_error=1')
         booking.sudo().action_cancel()
         return request.redirect('/my/physio?cancel_ok=1')

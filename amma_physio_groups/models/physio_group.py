@@ -56,6 +56,15 @@ class PhysioGroup(models.Model):
         string="Permitir reservas de otros grupos", default=False,
         help="Si está activo, pacientes de otros grupos pueden ocupar plazas "
              "libres en las clases de este grupo desde el portal.")
+    booking_cutoff_hours = fields.Integer(
+        string="Antelación mínima (horas)", default=24,
+        help="Horas mínimas de antelación para que un paciente pueda cancelar "
+             "su asistencia o apuntarse a una clase desde el portal. Por defecto 24h.")
+    auto_enroll = fields.Boolean(
+        string="Plaza asignada automática", default=True,
+        help="Si está activo, cada paciente del grupo queda apuntado "
+             "automáticamente a todas las clases del grupo (tiene su plaza "
+             "reservada sin necesidad de reservar).")
 
     # -- Relaciones / estadísticas --
     membership_ids = fields.One2many(
@@ -119,14 +128,17 @@ class PhysioGroup(models.Model):
                                   minute=int(round((line.start_time % 1) * 60))))
                     if fields.Datetime.to_string(start_dt) in existing:
                         continue
-                    created |= Session.create({
+                    session = Session.create({
                         'group_id': group.id,
                         'start_datetime': start_dt,
                         'duration': line.duration or group.duration,
                         'capacity': line.capacity or group.capacity,
                     })
+                    created |= session
                     existing.add(fields.Datetime.to_string(start_dt))
                 day += timedelta(days=1)
+        # Cada paciente del grupo queda apuntado automáticamente (plaza asignada)
+        created.filtered(lambda s: s.group_id.auto_enroll)._autoenroll_group_members()
         return created
 
     @api.model

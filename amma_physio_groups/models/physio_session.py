@@ -20,6 +20,7 @@ class PhysioSession(models.Model):
     instructor_id = fields.Many2one(related='group_id.instructor_id', store=True)
     allow_cross_booking = fields.Boolean(related='group_id.allow_cross_booking')
     allow_self_booking = fields.Boolean(related='group_id.allow_self_booking')
+    booking_cutoff_hours = fields.Integer(related='group_id.booking_cutoff_hours')
 
     start_datetime = fields.Datetime(
         string="Inicio", required=True, tracking=True, index=True)
@@ -91,6 +92,45 @@ class PhysioSession(models.Model):
 
     def action_reset_scheduled(self):
         self.write({'state': 'scheduled'})
+
+    # ------------------------------------------------------------------
+    # Plaza asignada automática (auto-enrolamiento de los miembros del grupo)
+    # ------------------------------------------------------------------
+    def _autoenroll_group_members(self):
+        """Apunta automáticamente a los pacientes activos del grupo en la clase
+        (su plaza reservada), respetando la capacidad y sin duplicar."""
+        Booking = self.env['physio.booking']
+        for session in self:
+            if session.state != 'scheduled':
+                continue
+            active_bookings = session.booking_ids.filtered(
+                lambda b: b.state in ('booked', 'attended'))
+            taken_partners = active_bookings.mapped('partner_id')
+            taken = len(active_bookings)
+            memberships = session.group_id.membership_ids.filtered(
+                lambda m: m.state == 'active')
+            for membership in memberships:
+                if membership.partner_id in taken_partners:
+                    continue
+                if taken >= session.capacity:
+                    break
+                Booking.create({
+                    'session_id': session.id,
+                    'partner_id': membership.partner_id.id,
+                    'membership_id': membership.id,
+                    'is_cross_booking': False,
+                    'state': 'booked',
+                })
+                taken += 1
+
+    def _is_within_cutoff(self):
+        """True si la clase está dentro del plazo de antelación mínima (no se
+        puede gestionar desde el portal)."""
+        self.ensure_one()
+        cutoff = self.booking_cutoff_hours or 0
+        if not self.start_datetime or not cutoff:
+            return False
+        return self.start_datetime - fields.Datetime.now() < timedelta(hours=cutoff)
 
     # ------------------------------------------------------------------
     # Reservas (usado por el portal)

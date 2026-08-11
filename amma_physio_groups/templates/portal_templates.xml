@@ -32,6 +32,10 @@
                     <i class="fa fa-exclamation-triangle me-1"/> No se ha podido completar la operación
                     (la clase puede estar completa, ya empezada o no disponible).
                 </div>
+                <div t-if="request.params.get('cutoff_error')" class="alert alert-warning mt-3" role="alert">
+                    <i class="fa fa-clock-o me-1"/> Debes gestionar los cambios con suficiente antelación
+                    (según la norma del grupo). Ya no es posible modificar esta clase.
+                </div>
 
                 <h3 class="mt-4 mb-3">Mis clases de fisioterapia</h3>
 
@@ -98,6 +102,11 @@
 
                 <!-- MIS PRÓXIMAS CLASES -->
                 <h4 class="mt-4 mb-3"><i class="fa fa-calendar-check-o me-1"/> Mis próximas clases</h4>
+                <p class="text-muted small">
+                    Tienes tu plaza reservada automáticamente en tu grupo. Si un día no
+                    puedes asistir, anula tu asistencia con antelación para que otro paciente
+                    pueda ocuparla, y podrás apuntarte a otra clase disponible.
+                </p>
                 <div t-if="not bookings" class="text-muted mb-4">No tienes clases reservadas.</div>
                 <div t-if="bookings" class="card mb-4">
                     <div class="card-body p-0">
@@ -119,15 +128,18 @@
                                                   class="badge text-bg-info ms-1">otro grupo</span>
                                         </td>
                                         <td class="text-end">
-                                            <form t-if="booking.session_id.group_id.allow_self_booking"
+                                            <form t-if="booking.session_id.group_id.allow_self_booking and not booking.cutoff_locked"
                                                   t-attf-action="/my/physio/booking/#{booking.id}/cancel"
                                                   method="post" class="d-inline">
                                                 <input type="hidden" name="csrf_token"
                                                        t-att-value="request.csrf_token()"/>
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fa fa-times me-1"/> Anular
+                                                    <i class="fa fa-times me-1"/> No puedo asistir
                                                 </button>
                                             </form>
+                                            <span t-if="booking.cutoff_locked" class="badge text-bg-light">
+                                                <i class="fa fa-lock me-1"/> Fuera de plazo
+                                            </span>
                                         </td>
                                     </tr>
                                 </t>

@@ -120,6 +120,33 @@ class PhysioMembership(models.Model):
             if not membership.date_start:
                 vals['date_start'] = fields.Date.context_today(membership)
             membership.write(vals)
+        # Reserva su plaza en las clases futuras de su grupo
+        self._autoenroll_future_sessions()
+
+    def _autoenroll_future_sessions(self):
+        """Apunta al paciente en todas las clases futuras de su grupo (plaza
+        asignada), respetando capacidad y sin duplicar."""
+        Booking = self.env['physio.booking']
+        for membership in self.filtered(
+                lambda m: m.state == 'active' and m.group_id.auto_enroll):
+            sessions = self.env['physio.session'].search([
+                ('group_id', '=', membership.group_id.id),
+                ('state', '=', 'scheduled'),
+                ('start_datetime', '>=', fields.Datetime.now()),
+            ])
+            for session in sessions:
+                already = session.booking_ids.filtered(
+                    lambda b: b.partner_id == membership.partner_id
+                    and b.state in ('booked', 'attended'))
+                if already or session.seats_available <= 0:
+                    continue
+                Booking.create({
+                    'session_id': session.id,
+                    'partner_id': membership.partner_id.id,
+                    'membership_id': membership.id,
+                    'is_cross_booking': False,
+                    'state': 'booked',
+                })
 
     def action_pause(self):
         self.write({'state': 'paused'})
