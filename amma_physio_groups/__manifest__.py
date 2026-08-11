@@ -56,6 +56,7 @@ Módulo profesional para clínicas de fisioterapia que trabajan por grupos/clase
         'views/physio_membership_views.xml',
         'views/res_partner_views.xml',
         'views/account_move_views.xml',
+        'views/sale_order_subscription_views.xml',
         'views/physio_menus.xml',
         'templates/portal_templates.xml',
     ],

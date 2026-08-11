@@ -181,8 +181,16 @@ class PhysioGroup(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': _("Suscripciones de %s") % self.name,
-            'res_model': 'physio.membership',
-            'view_mode': 'list,form',
-            'domain': [('group_id', '=', self.id)],
-            'context': {'default_group_id': self.id},
+            'res_model': 'sale.order',
+            'view_mode': 'list,kanban,form',
+            'domain': [('physio_group_id', '=', self.id)],
+            'search_view_id': self.env.ref(
+                'sale_subscription.sale_subscription_view_search').id,
+            'views': [
+                (self.env.ref('sale_subscription.sale_subscription_view_tree').id, 'list'),
+                (self.env.ref('sale_subscription.sale_subscription_view_kanban').id, 'kanban'),
+                (self.env.ref('sale_subscription.sale_subscription_primary_form_view').id, 'form'),
+            ],
+            'context': {'default_physio_group_id': self.id,
+                        'default_subscription_state': '1_draft'},
         }

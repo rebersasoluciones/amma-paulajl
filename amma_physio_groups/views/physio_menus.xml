@@ -23,7 +23,7 @@
               sequence="20"/>
 
     <menuitem id="menu_physio_memberships" name="Suscripciones"
-              parent="menu_physio_root" action="action_physio_membership"
+              parent="menu_physio_root" action="action_physio_subscription"
               sequence="40"/>
 
     <menuitem id="menu_physio_payments" name="Cobros"
