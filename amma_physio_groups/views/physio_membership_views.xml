@@ -145,7 +145,6 @@
                 <filter string="Activas" name="active" domain="[('state', '=', 'active')]"/>
                 <filter string="Pausadas" name="paused" domain="[('state', '=', 'paused')]"/>
                 <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
-                <filter string="Con importe pendiente" name="due" domain="[('amount_due', '&gt;', 0)]"/>
                 <separator/>
                 <filter string="Por facturar" name="to_invoice"
                         domain="[('state', '=', 'active'), ('recurring_next_date', '&lt;=', context_today())]"/>
