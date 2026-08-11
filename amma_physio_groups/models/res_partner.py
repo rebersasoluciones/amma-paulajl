@@ -22,6 +22,20 @@ class ResPartner(models.Model):
             partner.physio_active_group_ids = memberships.filtered(
                 lambda m: m.state == 'active').mapped('group_id')
 
+    def action_open_physio_enroll(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Crear suscripción de fisioterapia"),
+            'res_model': 'physio.enroll.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_partner_ids': [(6, 0, [self.id])],
+                'default_is_physio_patient': True,
+            },
+        }
+
     def action_view_physio_memberships(self):
         self.ensure_one()
         return {

@@ -176,6 +176,17 @@ class PhysioGroup(models.Model):
             'context': {'default_group_id': self.id},
         }
 
+    def action_open_enroll_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Crear suscripciones"),
+            'res_model': 'physio.enroll.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_group_id': self.id},
+        }
+
     def action_view_members(self):
         self.ensure_one()
         return {

@@ -6,6 +6,7 @@ access_physio_booking_user,physio.booking user,model_physio_booking,group_physio
 access_physio_membership_user,physio.membership user,model_physio_membership,group_physio_user,1,1,1,1
 access_physio_session_generate_user,physio.session.generate user,model_physio_session_generate,group_physio_user,1,1,1,1
 access_physio_membership_transfer_user,physio.membership.transfer user,model_physio_membership_transfer,group_physio_user,1,1,1,1
+access_physio_enroll_wizard_user,physio.enroll.wizard user,model_physio_enroll_wizard,group_physio_user,1,1,1,1
 access_physio_group_portal,physio.group portal,model_physio_group,base.group_portal,1,0,0,0
 access_physio_group_schedule_portal,physio.group.schedule portal,model_physio_group_schedule,base.group_portal,1,0,0,0
 access_physio_session_portal,physio.session portal,model_physio_session,base.group_portal,1,0,0,0
