@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_appointment_sign_qr_user,appointment.sign.qr user,model_appointment_sign_qr,base.group_user,1,1,1,1
+access_appointment_sign_qr_line_user,appointment.sign.qr.line user,model_appointment_sign_qr_line,base.group_user,1,1,1,1

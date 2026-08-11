@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="appointment_sign_qr_view_form" model="ir.ui.view">
+        <field name="name">appointment.sign.qr.form</field>
+        <field name="model">appointment.sign.qr</field>
+        <field name="arch" type="xml">
+            <form string="Firmar en tablet">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>Firma de documentos en tablet</h2>
+                    </div>
+                    <p class="text-muted">
+                        Pide al paciente que escanee el código QR con la tablet (o su móvil)
+                        para firmar el documento. También puedes imprimir el documento en
+                        blanco o, una vez firmado, el PDF firmado.
+                    </p>
+                    <field name="event_id" invisible="1"/>
+                    <field name="line_ids" nolabel="1">
+                        <list create="false" delete="false" editable="false">
+                            <field name="qr_image" widget="image" options="{'size': [150, 150]}"/>
+                            <field name="name"/>
+                            <field name="signing_url" string="Enlace"/>
+                            <field name="is_signed" widget="boolean_toggle" string="Firmado"/>
+                            <button name="action_print_blank" type="object"
+                                    string="PDF en blanco" icon="fa-print"/>
+                            <button name="action_print_signed" type="object"
+                                    string="PDF firmado" icon="fa-file-pdf-o"
+                                    invisible="not is_signed"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button string="Cerrar" class="btn-primary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
