@@ -60,6 +60,11 @@
         <field name="model">physio.group</field>
         <field name="arch" type="xml">
             <form string="Grupo">
+                <header>
+                    <button name="action_open_enroll_wizard" type="object"
+                            string="Crear suscripciones" class="btn-primary"
+                            groups="sales_team.group_sale_salesman"/>
+                </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_members" type="object"

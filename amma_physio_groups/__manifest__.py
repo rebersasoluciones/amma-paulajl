@@ -50,6 +50,7 @@ Módulo profesional para clínicas de fisioterapia que trabajan por grupos/clase
         'data/ir_cron_data.xml',
         'wizards/physio_session_generate_views.xml',
         'wizards/physio_membership_transfer_views.xml',
+        'wizards/physio_enroll_views.xml',
         'views/physio_group_views.xml',
         'views/physio_session_views.xml',
         'views/physio_booking_views.xml',
