@@ -15,6 +15,10 @@
                 <field name="currency_id" column_invisible="1"/>
                 <field name="recurring_next_date"/>
                 <field name="amount_due" widget="monetary" optional="show"/>
+                <field name="payment_status" widget="badge"
+                       decoration-success="payment_status == 'paid'"
+                       decoration-warning="payment_status == 'due'"
+                       decoration-muted="payment_status == 'no_invoice'"/>
                 <field name="invoice_count" string="Facturas" optional="hide"/>
                 <field name="state" widget="badge"
                        decoration-success="state == 'active'"
@@ -108,6 +112,7 @@
                             <field name="auto_invoice"/>
                             <field name="recurring_next_date"/>
                             <field name="last_invoice_date"/>
+                            <field name="max_classes_per_month"/>
                         </group>
                     </group>
                     <notebook>

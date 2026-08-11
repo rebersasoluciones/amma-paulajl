@@ -46,6 +46,11 @@ class PhysioMembership(models.Model):
     date_end = fields.Date(string="Baja", tracking=True)
 
     # -- Facturación recurrente --
+    max_classes_per_month = fields.Integer(
+        string="Tope de clases al mes",
+        help="Número máximo de clases al mes para este paciente (0 = sin límite). "
+             "Por defecto hereda el valor del grupo.")
+
     auto_invoice = fields.Boolean(
         string="Facturación automática", default=True,
         help="Genera automáticamente la factura mensual y envía el correo de cobro.")
@@ -60,6 +65,11 @@ class PhysioMembership(models.Model):
     amount_due = fields.Monetary(
         string="Pendiente de pago", compute='_compute_invoice_stats',
         currency_field='currency_id')
+    payment_status = fields.Selection([
+        ('no_invoice', "Sin facturas"),
+        ('paid', "Al día"),
+        ('due', "Pendiente"),
+    ], string="Estado de pago", compute='_compute_invoice_stats')
 
     booking_ids = fields.One2many(
         'physio.booking', 'membership_id', string="Reservas")
@@ -76,6 +86,12 @@ class PhysioMembership(models.Model):
                 lambda m: m.state == 'posted')
             membership.invoice_count = len(membership.invoice_ids)
             membership.amount_due = sum(invoices.mapped('amount_residual'))
+            if not invoices:
+                membership.payment_status = 'no_invoice'
+            elif membership.amount_due > 0:
+                membership.payment_status = 'due'
+            else:
+                membership.payment_status = 'paid'
 
     @api.onchange('group_id')
     def _onchange_group_id(self):
@@ -86,6 +102,8 @@ class PhysioMembership(models.Model):
                 self.price = self.group_id.price or (
                     self.group_id.product_id.lst_price
                     if self.group_id.product_id else 0.0)
+            if not self.max_classes_per_month:
+                self.max_classes_per_month = self.group_id.max_classes_per_month
 
     # ------------------------------------------------------------------
     # Creación
@@ -104,6 +122,8 @@ class PhysioMembership(models.Model):
                 if not vals.get('price'):
                     vals['price'] = group.price or (
                         group.product_id.lst_price if group.product_id else 0.0)
+                if not vals.get('max_classes_per_month'):
+                    vals['max_classes_per_month'] = group.max_classes_per_month
         return super().create(vals_list)
 
     # ------------------------------------------------------------------

@@ -60,6 +60,11 @@ class PhysioGroup(models.Model):
         string="Antelación mínima (horas)", default=24,
         help="Horas mínimas de antelación para que un paciente pueda cancelar "
              "su asistencia o apuntarse a una clase desde el portal. Por defecto 24h.")
+    max_classes_per_month = fields.Integer(
+        string="Tope de clases al mes", default=0,
+        help="Número máximo de clases al mes que puede tener un paciente de este "
+             "grupo (útil cuando se permite apuntarse a otros grupos). 0 = sin límite. "
+             "Es el valor por defecto de cada suscripción.")
     auto_enroll = fields.Boolean(
         string="Plaza asignada automática", default=True,
         help="Si está activo, cada paciente del grupo queda apuntado "

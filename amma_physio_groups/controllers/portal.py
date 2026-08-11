@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from odoo import _, fields, http
 from odoo.exceptions import AccessError, UserError, ValidationError
@@ -100,6 +100,15 @@ class PhysioPortal(CustomerPortal):
         }
         return request.render('amma_physio_groups.portal_physio_home', values)
 
+    def _physio_redirect(self, kw, status):
+        """Redirige a la página de origen (portada o planning semanal) con el
+        mensaje de estado. Solo se aceptan rutas internas del portal."""
+        target = kw.get('redirect') or '/my/physio'
+        if not target.startswith('/my/physio'):
+            target = '/my/physio'
+        sep = '&' if '?' in target else '?'
+        return request.redirect('%s%s%s=1' % (target, sep, status))
+
     # ------------------------------------------------------------------
     # Apuntarse a una clase
     # ------------------------------------------------------------------
@@ -111,27 +120,49 @@ class PhysioPortal(CustomerPortal):
         session = request.env['physio.session'].browse(session_id).exists()
 
         if not session or not memberships:
-            return request.redirect('/my/physio?booking_error=1')
+            return self._physio_redirect(kw, 'booking_error')
 
         my_group_ids = memberships.mapped('group_id').ids
         own = session.group_id.id in my_group_ids
         allowed = (own and session.group_id.allow_self_booking) or \
                   (not own and session.group_id.allow_cross_booking)
         if not allowed:
-            return request.redirect('/my/physio?booking_error=1')
+            return self._physio_redirect(kw, 'booking_error')
 
         # Regla de antelación mínima (p. ej. 24h antes de la clase)
         if session.sudo()._is_within_cutoff():
-            return request.redirect('/my/physio?cutoff_error=1')
+            return self._physio_redirect(kw, 'cutoff_error')
 
-        # Membresía de referencia (la del grupo si existe, si no la primera activa)
+        # Tope máximo de clases al mes por paciente
         membership = memberships.filtered(
             lambda m: m.group_id == session.group_id)[:1] or memberships[:1]
+        if self._physio_month_limit_reached(partner, memberships, session):
+            return self._physio_redirect(kw, 'limit_error')
+
         try:
             session.sudo().book_partner(partner, membership=membership.sudo())
         except (UserError, ValidationError, AccessError):
-            return request.redirect('/my/physio?booking_error=1')
-        return request.redirect('/my/physio?booking_ok=1')
+            return self._physio_redirect(kw, 'booking_error')
+        return self._physio_redirect(kw, 'booking_ok')
+
+    def _physio_month_limit_reached(self, partner, memberships, session):
+        """True si el paciente ya alcanzó su tope de clases del mes."""
+        limit = max(memberships.mapped('max_classes_per_month') or [0])
+        if not limit:
+            return False
+        local = fields.Datetime.context_timestamp(session, session.start_datetime)
+        month_start = datetime(local.year, local.month, 1)
+        if local.month == 12:
+            month_end = datetime(local.year + 1, 1, 1)
+        else:
+            month_end = datetime(local.year, local.month + 1, 1)
+        count = request.env['physio.booking'].search_count([
+            ('partner_id', '=', partner.id),
+            ('state', 'in', ('booked', 'attended')),
+            ('session_start', '>=', fields.Datetime.to_string(month_start)),
+            ('session_start', '<', fields.Datetime.to_string(month_end)),
+        ])
+        return count >= limit
 
     # ------------------------------------------------------------------
     # Desapuntarse de una clase
@@ -142,13 +173,90 @@ class PhysioPortal(CustomerPortal):
         partner = self._physio_partner()
         booking = request.env['physio.booking'].browse(booking_id).exists()
         if not booking or booking.partner_id != partner:
-            return request.redirect('/my/physio?booking_error=1')
+            return self._physio_redirect(kw, 'booking_error')
         if not booking.session_id.group_id.allow_self_booking:
-            return request.redirect('/my/physio?booking_error=1')
+            return self._physio_redirect(kw, 'booking_error')
         if booking.session_start and booking.session_start < fields.Datetime.now():
-            return request.redirect('/my/physio?booking_error=1')
+            return self._physio_redirect(kw, 'booking_error')
         # Regla de antelación mínima (p. ej. 24h antes de la clase)
         if booking.session_id.sudo()._is_within_cutoff():
-            return request.redirect('/my/physio?cutoff_error=1')
+            return self._physio_redirect(kw, 'cutoff_error')
         booking.sudo().action_cancel()
-        return request.redirect('/my/physio?cancel_ok=1')
+        return self._physio_redirect(kw, 'cancel_ok')
+
+    # ------------------------------------------------------------------
+    # Vista semanal tipo WODBUSTER (scroll por semanas)
+    # ------------------------------------------------------------------
+    @http.route(['/my/physio/semana'], type='http', auth='user', website=True)
+    def portal_physio_week(self, week=0, **kw):
+        try:
+            week = int(week)
+        except (TypeError, ValueError):
+            week = 0
+        # Límite de navegación: 8 semanas hacia adelante, 4 hacia atrás
+        week = max(-4, min(8, week))
+        partner = self._physio_partner()
+        memberships = self._physio_active_memberships()
+        my_group_ids = memberships.mapped('group_id').ids
+
+        today = fields.Date.context_today(self)
+        monday = today - timedelta(days=today.weekday()) + timedelta(weeks=week)
+        sunday = monday + timedelta(days=6)
+        start_dt = datetime.combine(monday, time.min)
+        end_dt = datetime.combine(sunday, time.max)
+
+        Session = request.env['physio.session'].sudo()
+        sessions = Session.search([
+            ('state', '=', 'scheduled'),
+            ('start_datetime', '>=', fields.Datetime.to_string(start_dt)),
+            ('start_datetime', '<=', fields.Datetime.to_string(end_dt)),
+        ], order='start_datetime asc')
+
+        my_bookings = request.env['physio.booking'].search([
+            ('partner_id', '=', partner.id),
+            ('state', '=', 'booked'),
+            ('session_start', '>=', fields.Datetime.to_string(start_dt)),
+            ('session_start', '<=', fields.Datetime.to_string(end_dt)),
+        ])
+        booking_by_session = {b.session_id.id: b for b in my_bookings}
+
+        buckets = {monday + timedelta(days=i): [] for i in range(7)}
+        for session in sessions:
+            local = fields.Datetime.context_timestamp(session, session.start_datetime)
+            day = local.date()
+            if day not in buckets:
+                continue
+            own = session.group_id.id in my_group_ids
+            if not (own or session.group_id.allow_cross_booking):
+                continue
+            booking = booking_by_session.get(session.id)
+            buckets[day].append({
+                'session': session,
+                'booking': booking,
+                'own': own,
+                'time': local.strftime('%H:%M'),
+                'bookable': (not booking) and session.seats_available > 0
+                and not session._is_within_cutoff()
+                and ((own and session.group_id.allow_self_booking)
+                     or (not own and session.group_id.allow_cross_booking)),
+            })
+
+        weekday_es = ['Lunes', 'Martes', 'Miércoles', 'Jueves',
+                      'Viernes', 'Sábado', 'Domingo']
+        days = [{
+            'date': d,
+            'label': weekday_es[d.weekday()],
+            'is_today': d == today,
+            'sessions': buckets[d],
+        } for d in sorted(buckets)]
+        values = {
+            'page_name': 'physio',
+            'no_breadcrumbs': True,
+            'memberships': memberships,
+            'days': days,
+            'week': week,
+            'monday': monday,
+            'sunday': sunday,
+            'redirect': '/my/physio/semana?week=%s' % week,
+        }
+        return request.render('amma_physio_groups.portal_physio_week', values)
