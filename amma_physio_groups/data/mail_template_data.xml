@@ -45,4 +45,35 @@
 </div>
         </field>
     </record>
+
+    <!-- Aviso de clase cancelada a los pacientes con plaza -->
+    <record id="mail_template_physio_session_cancelled" model="mail.template">
+        <field name="name">Fisioterapia: clase cancelada</field>
+        <field name="model_id" ref="model_physio_session"/>
+        <field name="subject">Clase cancelada · {{ object.group_id.name }}</field>
+        <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="auto_delete" eval="False"/>
+        <field name="body_html" type="html">
+<div style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#333;">
+    <p>Hola,</p>
+    <p>
+        Te informamos de que la clase de
+        <strong t-out="object.group_id.name or ''">Grupo</strong> del
+        <strong t-out="format_datetime(object.start_datetime) or ''">fecha</strong>
+        ha sido <strong style="color:#c0392b;">cancelada</strong>.
+    </p>
+    <p>
+        Si tenías tu plaza en esa clase, no necesitas hacer nada. Puedes apuntarte a
+        otra clase disponible desde tu área de cliente.
+    </p>
+    <p style="text-align:center;margin:24px 0;">
+        <a t-att-href="object.get_base_url() + '/my/physio'"
+           style="background-color:#00A09D;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
+            Ver mis clases
+        </a>
+    </p>
+    <p>Disculpa las molestias,<br/><t t-out="object.company_id.name or ''">La clínica</t></p>
+</div>
+        </field>
+    </record>
 </odoo>

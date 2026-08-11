@@ -9,7 +9,7 @@ class PhysioSession(models.Model):
     _name = 'physio.session'
     _description = "Clase de fisioterapia"
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _order = 'start_datetime desc'
+    _order = 'start_datetime asc'
     _rec_name = 'display_name'
 
     group_id = fields.Many2one(
@@ -85,10 +85,21 @@ class PhysioSession(models.Model):
         self.write({'state': 'done'})
 
     def action_cancel(self):
+        template = self.env.ref(
+            'amma_physio_groups.mail_template_physio_session_cancelled',
+            raise_if_not_found=False)
         for session in self:
-            session.booking_ids.filtered(
-                lambda b: b.state == 'booked').write({'state': 'cancelled'})
-        self.write({'state': 'cancelled'})
+            bookings = session.booking_ids.filtered(lambda b: b.state == 'booked')
+            partners = bookings.mapped('partner_id')
+            bookings.write({'state': 'cancelled'})
+            session.state = 'cancelled'
+            # Avisa por correo a todos los pacientes que tenían plaza
+            if template:
+                for partner in partners.filtered(lambda p: p.email):
+                    template.send_mail(
+                        session.id, force_send=False,
+                        email_values={'email_to': partner.email},
+                        email_layout_xmlid='mail.mail_notification_light')
 
     def action_reset_scheduled(self):
         self.write({'state': 'scheduled'})

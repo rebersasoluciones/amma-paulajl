@@ -39,7 +39,7 @@ class PhysioPortal(CustomerPortal):
             domain.append(('session_start', '>=', fields.Datetime.now()))
         return request.env['physio.booking'].search(domain, order='session_start asc')
 
-    def _physio_bookable_sessions(self, memberships, days=21):
+    def _physio_bookable_sessions(self, memberships, days=7):
         """Devuelve las clases futuras a las que el paciente puede apuntarse."""
         if not memberships:
             return request.env['physio.session']
@@ -92,6 +92,7 @@ class PhysioPortal(CustomerPortal):
 
         values = {
             'page_name': 'physio',
+            'no_breadcrumbs': True,
             'memberships': memberships,
             'bookings': bookings,
             'bookable_sessions': bookable,

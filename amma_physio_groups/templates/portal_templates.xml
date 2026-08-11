@@ -21,6 +21,12 @@
             <t t-set="page_name" t-value="'physio'"/>
 
             <div class="container">
+                <ol class="breadcrumb mt-3 mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/my/home" aria-label="Inicio" title="Inicio"><i class="fa fa-home"/></a>
+                    </li>
+                    <li class="breadcrumb-item active">Mis clases</li>
+                </ol>
                 <!-- Avisos -->
                 <div t-if="request.params.get('booking_ok')" class="alert alert-success mt-3" role="alert">
                     <i class="fa fa-check-circle me-1"/> Te has apuntado a la clase correctamente.
