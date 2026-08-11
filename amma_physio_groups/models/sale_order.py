@@ -10,6 +10,33 @@ class SaleOrder(models.Model):
         ondelete='set null', index=True, copy=False)
     physio_group_id = fields.Many2one(
         'physio.group', string="Grupo de fisioterapia", copy=False, index=True)
+    physio_amount_due = fields.Monetary(
+        string="Pendiente de pago", compute='_compute_physio_payment_status',
+        currency_field='currency_id')
+    physio_payment_status = fields.Selection([
+        ('no_invoice', "Sin facturas"),
+        ('paid', "Al corriente"),
+        ('due', "Pendiente"),
+    ], string="Estado de pago", compute='_compute_physio_payment_status',
+        help="Al corriente si no hay importe pendiente en sus facturas; "
+             "Pendiente si tiene facturas sin cobrar.")
+
+    @api.depends('physio_group_id', 'invoice_ids.state',
+                 'invoice_ids.payment_state', 'invoice_ids.amount_residual')
+    def _compute_physio_payment_status(self):
+        for order in self:
+            invoices = order.invoice_ids.filtered(
+                lambda m: m.move_type == 'out_invoice' and m.state == 'posted')
+            due = sum(invoices.mapped('amount_residual'))
+            order.physio_amount_due = due
+            if not order.physio_group_id:
+                order.physio_payment_status = False
+            elif not invoices:
+                order.physio_payment_status = 'no_invoice'
+            elif order.currency_id.compare_amounts(due, 0) > 0:
+                order.physio_payment_status = 'due'
+            else:
+                order.physio_payment_status = 'paid'
 
     # Mapa estado de suscripción nativa -> estado de la inscripción de fisioterapia
     _PHYSIO_STATE_MAP = {
