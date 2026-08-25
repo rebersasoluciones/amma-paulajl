@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="appointment_manual_booking_view_form" model="ir.ui.view">
+        <field name="name">appointment.manual.booking.form</field>
+        <field name="model">appointment.manual.booking</field>
+        <field name="arch" type="xml">
+            <form string="Reservar cita con pago">
+                <div class="alert alert-warning" role="alert"
+                     invisible="not appointment_type_id or has_payment_step">
+                    Este tipo de cita no tiene activado el <b>pago por adelantado</b>.
+                    Configúralo en Citas → Tipos de cita (marca la opción y elige el
+                    producto de reserva) o elige otro tipo de cita.
+                </div>
+                <group>
+                    <group name="cita">
+                        <field name="partner_id" options="{'no_quick_create': True}"/>
+                        <field name="appointment_type_id" options="{'no_create': True}"/>
+                        <field name="has_payment_step" invisible="1"/>
+                        <field name="schedule_based_on" invisible="1"/>
+                        <field name="available_staff_user_ids" invisible="1"/>
+                        <field name="available_resource_ids" invisible="1"/>
+                        <field name="staff_user_id"
+                               domain="[('id', 'in', available_staff_user_ids)]"
+                               options="{'no_create': True}"
+                               invisible="schedule_based_on != 'users'"
+                               required="schedule_based_on == 'users'"/>
+                        <field name="appointment_resource_id"
+                               domain="[('id', 'in', available_resource_ids)]"
+                               options="{'no_create': True}"
+                               invisible="schedule_based_on != 'resources'"
+                               required="schedule_based_on == 'resources'"/>
+                    </group>
+                    <group name="horario">
+                        <field name="start"/>
+                        <field name="duration" widget="float_time"/>
+                        <field name="stop"/>
+                        <field name="asked_capacity"/>
+                    </group>
+                    <group name="cobro" string="Cobro">
+                        <field name="product_currency_id" invisible="1"/>
+                        <field name="product_id"/>
+                        <field name="product_lst_price" widget="monetary"
+                               options="{'currency_field': 'product_currency_id'}"/>
+                        <field name="sale_order_id"
+                               domain="[('partner_id', '=', partner_id), ('state', '=', 'draft')]"
+                               options="{'no_create': True}"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" data-hotkey="q"
+                            string="Confirmar y generar enlace de pago" class="btn-primary"/>
+                    <button special="cancel" data-hotkey="x"
+                            string="Cancelar" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="appointment_manual_booking_action" model="ir.actions.act_window">
+        <field name="name">Reservar cita con pago</field>
+        <field name="res_model">appointment.manual.booking</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_appointment_manual_booking"
+              parent="appointment.menu_appointment_schedule_resources"
+              action="appointment_manual_booking_action"
+              name="Reservar cita con pago"
+              sequence="20"
+              groups="appointment.group_appointment_user"/>
+
+</odoo>
