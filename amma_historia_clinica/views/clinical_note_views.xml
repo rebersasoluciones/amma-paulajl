@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="amma_clinical_note_view_list" model="ir.ui.view">
+        <field name="name">amma.clinical.note.list</field>
+        <field name="model">amma.clinical.note</field>
+        <field name="arch" type="xml">
+            <list string="Registros de sesión">
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="note_type_id"/>
+                <field name="appointment_type_id" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="amma_clinical_note_view_form" model="ir.ui.view">
+        <field name="name">amma.clinical.note.form</field>
+        <field name="model">amma.clinical.note</field>
+        <field name="arch" type="xml">
+            <form string="Registro de sesión">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id" options="{'no_quick_create': True}"/>
+                            <field name="date"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="note_type_id" options="{'no_quick_create': True}"/>
+                            <field name="calendar_event_id" options="{'no_create': True}"/>
+                            <field name="appointment_type_id" invisible="not calendar_event_id"/>
+                        </group>
+                    </group>
+                    <field name="body" placeholder="Registro de la sesión…"/>
+                    <field name="attachment_ids" widget="many2many_binary" string="Ficheros"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="amma_clinical_note_view_search" model="ir.ui.view">
+        <field name="name">amma.clinical.note.search</field>
+        <field name="model">amma.clinical.note</field>
+        <field name="arch" type="xml">
+            <search string="Registros de sesión">
+                <field name="partner_id"/>
+                <field name="user_id"/>
+                <field name="note_type_id"/>
+                <filter name="my_notes" string="Mis registros" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_date" string="Fecha" date="date"/>
+                <group name="group_by">
+                    <filter name="group_partner" string="Paciente" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_user" string="Profesional" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_note_type" string="Plantilla" context="{'group_by': 'note_type_id'}"/>
+                    <filter name="group_date" string="Fecha" context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="amma_clinical_note_action" model="ir.actions.act_window">
+        <field name="name">Registros de sesión</field>
+        <field name="res_model">amma.clinical.note</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="amma_clinical_note_view_search"/>
+    </record>
+
+    <record id="amma_clinical_note_type_view_list" model="ir.ui.view">
+        <field name="name">amma.clinical.note.type.list</field>
+        <field name="model">amma.clinical.note.type</field>
+        <field name="arch" type="xml">
+            <list string="Plantillas">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="appointment_type_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="amma_clinical_note_type_view_form" model="ir.ui.view">
+        <field name="name">amma.clinical.note.type.form</field>
+        <field name="model">amma.clinical.note.type</field>
+        <field name="arch" type="xml">
+            <form string="Plantilla de registro">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="p. ej. Primera sesión"/></h1>
+                    </div>
+                    <group>
+                        <field name="appointment_type_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                    <field name="template_body" placeholder="Apartados que se cargan al crear el registro…"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="amma_clinical_note_type_action" model="ir.actions.act_window">
+        <field name="name">Plantillas de registro</field>
+        <field name="res_model">amma.clinical.note.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

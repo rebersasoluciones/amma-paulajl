@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="amma_patient_type_view_list" model="ir.ui.view">
+        <field name="name">amma.patient.type.list</field>
+        <field name="model">amma.patient.type</field>
+        <field name="arch" type="xml">
+            <list string="Motivos de consulta" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="color" widget="color_picker" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="amma_patient_type_action" model="ir.actions.act_window">
+        <field name="name">Motivos de consulta</field>
+        <field name="res_model">amma.patient.type</field>
+        <field name="view_mode">list</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_amma_clinical_note_user,amma.clinical.note.user,model_amma_clinical_note,group_clinical_user,1,1,1,0
+access_amma_clinical_note_manager,amma.clinical.note.manager,model_amma_clinical_note,group_clinical_manager,1,1,1,1
+access_amma_clinical_note_type_user,amma.clinical.note.type.user,model_amma_clinical_note_type,group_clinical_user,1,0,0,0
+access_amma_clinical_note_type_manager,amma.clinical.note.type.manager,model_amma_clinical_note_type,group_clinical_manager,1,1,1,1
+access_amma_patient_type_user,amma.patient.type.user,model_amma_patient_type,base.group_user,1,0,0,0
+access_amma_patient_type_manager,amma.patient.type.manager,model_amma_patient_type,group_clinical_manager,1,1,1,1

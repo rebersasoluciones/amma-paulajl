@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_clinical_root"
+              name="Historia clínica"
+              sequence="-110"
+              groups="amma_historia_clinica.group_clinical_user"/>
+
+    <menuitem id="menu_clinical_patients"
+              parent="menu_clinical_root"
+              action="amma_patient_action"
+              name="Pacientes"
+              sequence="10"/>
+
+    <menuitem id="menu_clinical_notes"
+              parent="menu_clinical_root"
+              action="amma_clinical_note_action"
+              name="Registros de sesión"
+              sequence="20"/>
+
+    <menuitem id="menu_clinical_config"
+              parent="menu_clinical_root"
+              name="Configuración"
+              sequence="90"
+              groups="amma_historia_clinica.group_clinical_manager"/>
+
+    <menuitem id="menu_clinical_note_types"
+              parent="menu_clinical_config"
+              action="amma_clinical_note_type_action"
+              name="Plantillas de registro"
+              sequence="10"/>
+
+    <menuitem id="menu_clinical_patient_types"
+              parent="menu_clinical_config"
+              action="amma_patient_type_action"
+              name="Motivos de consulta"
+              sequence="20"/>
+
+</odoo>
