@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="appointment_type_view_form_downpayment" model="ir.ui.view">
+        <field name="name">appointment.type.view.form.inherit.downpayment</field>
+        <field name="model">appointment.type</field>
+        <field name="inherit_id" ref="appointment_account_payment.appointment_type_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_lst_price']" position="after">
+                <span class="ms-1">· anticipo</span>
+                <field name="downpayment_prepayment_percent" widget="percentage"
+                       class="oe_inline ms-1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
