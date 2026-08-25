@@ -39,6 +39,21 @@ class AppointmentManualBooking(models.TransientModel):
         string="Fin", compute='_compute_stop', store=True, readonly=False)
     asked_capacity = fields.Integer(string="Plazas", default=1, required=True)
 
+    payment_mode = fields.Selection(
+        [('total', "El total"),
+         ('downpayment', "El anticipo del tipo de cita"),
+         ('custom', "Otro importe")],
+        string="Cobrar ahora", default='total', required=True,
+        help="Importe que hay que cobrar para que el pedido se confirme y la "
+             "cita entre en el calendario. Lo que quede se factura después "
+             "desde el mismo pedido.")
+    downpayment_percent = fields.Float(
+        related='appointment_type_id.downpayment_prepayment_percent',
+        string="Anticipo del tipo de cita")
+    amount_to_charge = fields.Monetary(
+        string="Importe a cobrar", currency_field='product_currency_id',
+        compute='_compute_amount_to_charge', store=True, readonly=False)
+
     sale_order_id = fields.Many2one(
         'sale.order', string="Añadir a este pedido",
         help="Si se deja vacío se crea un pedido nuevo para esta cita.")
@@ -61,6 +76,11 @@ class AppointmentManualBooking(models.TransientModel):
     def _compute_duration(self):
         for wizard in self:
             wizard.duration = wizard.appointment_type_id.appointment_duration or 1.0
+
+    @api.depends('product_lst_price', 'asked_capacity')
+    def _compute_amount_to_charge(self):
+        for wizard in self:
+            wizard.amount_to_charge = wizard.product_lst_price * wizard.asked_capacity
 
     @api.depends('start', 'duration')
     def _compute_stop(self):
@@ -86,6 +106,10 @@ class AppointmentManualBooking(models.TransientModel):
         order = self._get_order()
         line = self._create_order_line(order, booking_sudo)
         booking_sudo.order_line_id = line
+        order.write({
+            'require_payment': True,
+            'prepayment_percent': self._get_prepayment_percent(order),
+        })
 
         action = self.env['ir.actions.act_window']._for_xml_id(
             'sale.action_sale_order_generate_link')
@@ -111,6 +135,8 @@ class AppointmentManualBooking(models.TransientModel):
             raise UserError(_("La hora de fin tiene que ser posterior a la de inicio."))
         if self.asked_capacity < 1:
             raise UserError(_("Hay que reservar al menos una plaza."))
+        if self.payment_mode == 'custom' and self.amount_to_charge <= 0:
+            raise UserError(_("El importe a cobrar tiene que ser mayor que cero."))
         if appointment_type.schedule_based_on == 'resources':
             if self.appointment_resource_id not in appointment_type.resource_ids:
                 raise UserError(_(
@@ -194,8 +220,15 @@ class AppointmentManualBooking(models.TransientModel):
         self.ensure_one()
         return self.sale_order_id or self.env['sale.order'].create({
             'partner_id': self.partner_id.id,
-            'require_payment': True,
         })
+
+    def _get_prepayment_percent(self, order):
+        self.ensure_one()
+        if self.payment_mode == 'downpayment':
+            return self.appointment_type_id.downpayment_prepayment_percent
+        if self.payment_mode == 'custom' and order.amount_total:
+            return min(self.amount_to_charge / order.amount_total, 1.0)
+        return 1.0
 
     def _create_order_line(self, order, booking_sudo):
         self.ensure_one()

@@ -42,6 +42,13 @@
                         <field name="product_id"/>
                         <field name="product_lst_price" widget="monetary"
                                options="{'currency_field': 'product_currency_id'}"/>
+                        <field name="payment_mode"/>
+                        <field name="downpayment_percent" widget="percentage"
+                               invisible="payment_mode != 'downpayment'"/>
+                        <field name="amount_to_charge" widget="monetary"
+                               options="{'currency_field': 'product_currency_id'}"
+                               invisible="payment_mode != 'custom'"
+                               required="payment_mode == 'custom'"/>
                         <field name="sale_order_id"
                                domain="[('partner_id', '=', partner_id), ('state', '=', 'draft')]"
                                options="{'no_create': True}"/>

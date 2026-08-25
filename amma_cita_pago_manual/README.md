@@ -21,7 +21,8 @@ Reservar cita con pago**. Todo lo demás es mecanismo nativo de Odoo 19 EE:
 | Reserva pendiente de pago (`calendar.booking` + `calendar.booking.line`) | este módulo, con los mismos valores que el formulario público |
 | Comprobación del hueco | `calendar.booking._filter_unavailable_bookings()` (nativo) |
 | Pedido y línea (`sale.order` / `sale.order.line` con `calendar_booking_ids`) | este módulo |
-| Enlace de pago | asistente nativo `payment.link.wizard` (acción `sale.action_sale_order_generate_link`) |
+| Importe mínimo para confirmar (`require_payment` + `prepayment_percent`) | este módulo, a partir de *Cobrar ahora* |
+| Enlace de pago | asistente nativo `payment.link.wizard` (acción `sale.action_sale_order_generate_link`), que sugiere ese mismo importe |
 | Confirmación del pedido al cobrar | `payment.transaction._check_amount_and_confirm_order()` (nativo) |
 | Creación de la cita al confirmar | `sale.order._action_confirm()` → `calendar_booking_ids._make_event_from_paid_booking()` (nativo, de `website_appointment_sale`) |
 | Limpieza de reservas caducadas | `calendar.booking._gc_calendar_booking` (nativo, autovacuum) |
@@ -41,10 +42,14 @@ Reservar cita con pago**. Todo lo demás es mecanismo nativo de Odoo 19 EE:
 1. **Citas → Agenda → Reservar cita con pago**.
 2. Paciente, tipo de cita, profesional (o recurso, según el tipo), inicio,
    duración y plazas.
-3. *Confirmar y generar enlace de pago*: se crea la reserva y el pedido en
-   borrador, y se abre el asistente nativo del enlace para copiarlo o enviarlo.
-4. El paciente paga → el pedido se confirma → aparece la cita en el calendario
-   del profesional. Si se prefiere, se puede confirmar el pedido a mano.
+3. **Cobrar ahora**: el total, el anticipo configurado en el tipo de cita, o
+   cualquier otro importe.
+4. *Confirmar y generar enlace de pago*: se crea la reserva y el pedido en
+   borrador, y se abre el asistente nativo del enlace, ya con el importe
+   elegido puesto, para copiarlo o enviarlo.
+5. El paciente paga ese importe → el pedido se confirma → aparece la cita en el
+   calendario del profesional. Si se prefiere, se puede confirmar el pedido a
+   mano. Lo que quede pendiente se factura después desde el mismo pedido.
 
 Si el paciente no paga nunca, no se crea ninguna cita y el pedido se queda en
 borrador; las reservas viejas las limpia el autovacuum nativo.
@@ -56,10 +61,11 @@ ejemplo para cobrar varias citas de una vez).
 ## Cosas a tener en cuenta
 
 - **El pedido exige pago en línea** (`require_payment`), así que sólo se confirma
-  cuando lo cobrado llega al mínimo del pedido: por defecto el 100%, o el
-  porcentaje de anticipo que tenga configurado el pedido. Sin esa marca,
-  cualquier importe parcial pagado desde el enlace confirmaría el pedido y
-  crearía la cita.
+  cuando lo cobrado llega al importe elegido en *Cobrar ahora*. Sin esa marca,
+  el mínimo del pedido sería 0 y cualquier importe parcial pagado desde el
+  enlace confirmaría el pedido y crearía la cita.
+- **Si añades la cita a un pedido existente**, el importe elegido se aplica al
+  pedido entero (es un porcentaje del total del pedido), no sólo a esa línea.
 - **El hueco no queda bloqueado hasta el cobro.** Es el comportamiento nativo:
   las reservas pendientes de pago (`calendar.booking`) no cuentan como ocupación,
   así que dos pedidos sin pagar pueden apuntar al mismo hueco. La disponibilidad
