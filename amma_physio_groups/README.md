@@ -72,4 +72,14 @@ Ruta `/my/physio` (tarjeta también en `/my/home`):
 - *Generar clases del periodo* (semanal): crea las clases de las próximas semanas
   a partir del horario de cada grupo.
 
+## Zona horaria
+Las horas del **horario semanal** son horas locales: la hora que se escribe es la
+que verán la recepción y los pacientes. Al generar las clases se convierten a UTC
+(que es como Odoo guarda las fechas), teniendo en cuenta el cambio de hora, de
+modo que una franja de las 09:00 sigue siendo las 09:00 en invierno y en verano.
+
+La zona que se usa es la del usuario que genera las clases; si no la tiene puesta
+(por ejemplo el usuario del cron), se usa la de la compañía. Conviene revisar que
+ambas estén configuradas en *Ajustes → Usuarios* y en la ficha de la compañía.
+
 Licencia: LGPL-3. Autor: Rebersa Soluciones.

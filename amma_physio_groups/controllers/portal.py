@@ -6,6 +6,8 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.http import request
 from odoo.addons.portal.controllers.portal import CustomerPortal
 
+from ..utils import local_to_utc
+
 
 class PhysioPortal(CustomerPortal):
 
@@ -151,11 +153,12 @@ class PhysioPortal(CustomerPortal):
         if not limit:
             return False
         local = fields.Datetime.context_timestamp(session, session.start_datetime)
-        month_start = datetime(local.year, local.month, 1)
+        env = request.env
+        month_start = local_to_utc(env, datetime(local.year, local.month, 1))
         if local.month == 12:
-            month_end = datetime(local.year + 1, 1, 1)
+            month_end = local_to_utc(env, datetime(local.year + 1, 1, 1))
         else:
-            month_end = datetime(local.year, local.month + 1, 1)
+            month_end = local_to_utc(env, datetime(local.year, local.month + 1, 1))
         count = request.env['physio.booking'].search_count([
             ('partner_id', '=', partner.id),
             ('state', 'in', ('booked', 'attended')),
@@ -202,8 +205,8 @@ class PhysioPortal(CustomerPortal):
         today = fields.Date.context_today(self)
         monday = today - timedelta(days=today.weekday()) + timedelta(weeks=week)
         sunday = monday + timedelta(days=6)
-        start_dt = datetime.combine(monday, time.min)
-        end_dt = datetime.combine(sunday, time.max)
+        start_dt = local_to_utc(request.env, datetime.combine(monday, time.min))
+        end_dt = local_to_utc(request.env, datetime.combine(sunday, time.max))
 
         Session = request.env['physio.session'].sudo()
         sessions = Session.search([

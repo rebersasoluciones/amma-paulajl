@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, time
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from ..utils import local_to_utc
+
 
 class PhysioGroup(models.Model):
     _name = 'physio.group'
@@ -139,9 +141,11 @@ class PhysioGroup(models.Model):
             while day <= date_to:
                 for line in group.schedule_line_ids.filtered(
                         lambda l: int(l.weekday) == day.weekday()):
-                    start_dt = datetime.combine(
+                    # La hora del horario es local: se convierte a UTC, que es
+                    # como Odoo guarda los campos Datetime.
+                    start_dt = local_to_utc(self.env, datetime.combine(
                         day, time(hour=int(line.start_time),
-                                  minute=int(round((line.start_time % 1) * 60))))
+                                  minute=int(round((line.start_time % 1) * 60)))))
                     if fields.Datetime.to_string(start_dt) in existing:
                         continue
                     session = Session.create({
