@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="clinical_note_type_first_session" model="amma.clinical.note.type">
+            <field name="name">Primera sesión</field>
+            <field name="sequence">10</field>
+            <field name="template_body" type="html">
+                <div>
+                    <h3>Motivo de consulta</h3>
+                    <p><br/></p>
+                    <h3>Antecedentes</h3>
+                    <p><br/></p>
+                    <h3>Exploración</h3>
+                    <p><br/></p>
+                    <h3>Diagnóstico fisioterápico</h3>
+                    <p><br/></p>
+                    <h3>Plan de tratamiento</h3>
+                    <p><br/></p>
+                </div>
+            </field>
+        </record>
+
+        <record id="clinical_note_type_treatment" model="amma.clinical.note.type">
+            <field name="name">Sesión de tratamiento</field>
+            <field name="sequence">20</field>
+            <field name="template_body" type="html">
+                <div>
+                    <h3>Evolución desde la última sesión</h3>
+                    <p><br/></p>
+                    <h3>Tratamiento realizado</h3>
+                    <p><br/></p>
+                    <h3>Pautas para casa</h3>
+                    <p><br/></p>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

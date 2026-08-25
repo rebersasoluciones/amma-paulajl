@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_partner_view_form_clinical" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.clinical</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="before">
+                <div class="alert alert-warning mb-2" role="alert" invisible="not patient_alert"
+                     groups="amma_historia_clinica.group_clinical_user">
+                    <i class="fa fa-exclamation-triangle me-1" title="Aviso"/>
+                    <field name="patient_alert" readonly="1" nolabel="1" class="oe_inline"/>
+                </div>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="is_patient" invisible="1"/>
+                <button name="action_open_patient_appointments" type="object"
+                        class="oe_stat_button" icon="fa-calendar" invisible="not is_patient"
+                        groups="amma_historia_clinica.group_clinical_user">
+                    <field name="patient_visit_count" widget="statinfo" string="Visitas"/>
+                </button>
+                <button name="action_open_clinical_notes" type="object"
+                        class="oe_stat_button" icon="fa-stethoscope" invisible="not is_patient"
+                        groups="amma_historia_clinica.group_clinical_user">
+                    <field name="clinical_note_count" widget="statinfo" string="Registros"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page name="clinical_history" string="Historia clínica" invisible="is_company"
+                      groups="amma_historia_clinica.group_clinical_user">
+                    <group>
+                        <group name="clinical_identity" string="Ficha del paciente">
+                            <field name="is_patient" widget="boolean_toggle"/>
+                            <field name="patient_type_id" invisible="not is_patient"
+                                   options="{'no_quick_create': True}"/>
+                            <field name="patient_birthdate" invisible="not is_patient"/>
+                            <field name="patient_age" invisible="not is_patient or not patient_birthdate"/>
+                            <field name="patient_gender" invisible="not is_patient"/>
+                            <field name="patient_responsible_id" invisible="not is_patient"
+                                   widget="many2one_avatar_user"/>
+                        </group>
+                        <group name="clinical_follow_up" string="Seguimiento" invisible="not is_patient">
+                            <field name="patient_first_visit"/>
+                            <field name="patient_last_visit"/>
+                            <field name="patient_visit_count"/>
+                            <field name="patient_alert"
+                                   placeholder="Alergias, patologías, avisos…"/>
+                        </group>
+                    </group>
+                    <separator string="Registros de sesión" invisible="not is_patient"/>
+                    <field name="clinical_note_ids" invisible="not is_patient"
+                           context="{'default_partner_id': id}">
+                        <list default_order="date desc">
+                            <field name="date"/>
+                            <field name="note_type_id"/>
+                            <field name="appointment_type_id" optional="show"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                        </list>
+                    </field>
+                </page>
+                <page name="clinical_appointments" string="Historial de reservas"
+                      invisible="is_company or not is_patient" groups="amma_historia_clinica.group_clinical_user">
+                    <field name="patient_appointment_ids" readonly="1" nolabel="1">
+                        <list default_order="start desc" create="false" delete="false">
+                            <field name="start" string="Fecha"/>
+                            <field name="appointment_type_id" string="Tipo de cita"/>
+                            <field name="user_id" string="Profesional" widget="many2one_avatar_user"/>
+                            <field name="appointment_status" string="Estado" widget="badge"
+                                   decoration-success="appointment_status == 'attended'"
+                                   decoration-danger="appointment_status in ('cancelled', 'no_show')"/>
+                            <field name="clinical_note_count" string="Registro"/>
+                            <button name="action_open_clinical_note" type="object"
+                                    string="Registro de sesión" icon="fa-file-text-o"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_partner_view_search_clinical" model="ir.ui.view">
+        <field name="name">res.partner.search.inherit.clinical</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <filter name="type_person" position="before">
+                <filter string="Pacientes" name="patients" domain="[('is_patient', '=', True)]"
+                        groups="amma_historia_clinica.group_clinical_user"/>
+                <separator/>
+            </filter>
+            <filter name="group_country" position="after">
+                <filter string="Motivo de consulta" name="group_patient_type"
+                        context="{'group_by': 'patient_type_id'}" groups="amma_historia_clinica.group_clinical_user"/>
+                <filter string="Profesional responsable" name="group_patient_responsible"
+                        context="{'group_by': 'patient_responsible_id'}" groups="amma_historia_clinica.group_clinical_user"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="amma_patient_action" model="ir.actions.act_window">
+        <field name="name">Pacientes</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('is_patient', '=', True)]</field>
+        <field name="context">{'default_is_patient': True, 'default_is_company': False}</field>
+        <field name="search_view_id" ref="base.view_res_partner_filter"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea la ficha de un paciente
+            </p><p>
+                Marca <b>Es paciente</b> en la pestaña <b>Historia clínica</b> de un contacto
+                para que aparezca aquí.
+            </p>
+        </field>
+    </record>
+
+</odoo>

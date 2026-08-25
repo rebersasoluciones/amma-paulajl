@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="calendar_event_view_form_clinical" model="ir.ui.view">
+        <field name="name">calendar.event.form.inherit.clinical</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="appointment_type_id" invisible="1"/>
+                <button name="action_open_clinical_note" type="object"
+                        class="oe_stat_button" icon="fa-stethoscope"
+                        invisible="not appointment_type_id" groups="amma_historia_clinica.group_clinical_user">
+                    <field name="clinical_note_count" widget="statinfo" string="Registro"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
