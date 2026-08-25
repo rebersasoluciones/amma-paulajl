@@ -29,7 +29,7 @@ SII/Verifactu de una cita que puede no llegar a pagarse.
     'author': "Lógica Consultores 360",
     'website': "https://www.logicaconsultores.com",
     'category': 'Services/Appointment',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'license': 'LGPL-3',
     'application': True,
     'sequence': -111,

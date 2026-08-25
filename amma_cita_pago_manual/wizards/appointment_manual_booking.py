@@ -194,6 +194,7 @@ class AppointmentManualBooking(models.TransientModel):
         self.ensure_one()
         return self.sale_order_id or self.env['sale.order'].create({
             'partner_id': self.partner_id.id,
+            'require_payment': True,
         })
 
     def _create_order_line(self, order, booking_sudo):

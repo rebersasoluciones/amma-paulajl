@@ -55,6 +55,11 @@ ejemplo para cobrar varias citas de una vez).
 
 ## Cosas a tener en cuenta
 
+- **El pedido exige pago en línea** (`require_payment`), así que sólo se confirma
+  cuando lo cobrado llega al mínimo del pedido: por defecto el 100%, o el
+  porcentaje de anticipo que tenga configurado el pedido. Sin esa marca,
+  cualquier importe parcial pagado desde el enlace confirmaría el pedido y
+  crearía la cita.
 - **El hueco no queda bloqueado hasta el cobro.** Es el comportamiento nativo:
   las reservas pendientes de pago (`calendar.booking`) no cuentan como ocupación,
   así que dos pedidos sin pagar pueden apuntar al mismo hueco. La disponibilidad
