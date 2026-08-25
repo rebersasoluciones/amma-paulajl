@@ -29,6 +29,8 @@ de reserva larga (p. ej. 90 días).
         'appointment',
     ],
     'data': [
+        'security/ir.model.access.csv',
+        'wizards/appointment_slot_preview_views.xml',
         'views/appointment_type_views.xml',
     ],
     'application': True,

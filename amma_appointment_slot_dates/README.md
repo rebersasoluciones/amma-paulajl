@@ -38,6 +38,21 @@ Subir **"Permitir reservas dentro de los próximos X días"** (`max_schedule_day
 a 90 en el tipo de cita para tener ventana de 3 meses. Es configuración del
 usuario, el módulo no la toca.
 
+## Vista previa del horario
+
+En la pestaña *Disponibilidades*, el botón **Vista previa del horario** abre una
+tabla semana a semana de toda la ventana de reserva: una fila por semana, una
+columna por día, y en cada celda las franjas que aplican ese día.
+
+- **Ámbar**: ese día no tiene ninguna franja vigente, aunque ese día de la semana
+  sí tiene horario en otras fechas del rango. Es el aviso de que un periodo
+  termina antes de que empiece el siguiente.
+- **Rojo**: dos franjas del mismo día se solapan. Normalmente es un periodo
+  antiguo al que se le olvidó poner fecha de fin.
+
+Muestra qué franjas aplican, no los huecos libres: no tiene en cuenta ausencias,
+reservas ya hechas ni la antelación mínima.
+
 ## Cuidado con esto
 
 - Una franja **sin fecha de fin sigue vigente para siempre**. Al abrir un periodo

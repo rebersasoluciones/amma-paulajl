@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_amma_appointment_slot_preview,amma.appointment.slot.preview,model_amma_appointment_slot_preview,appointment.group_appointment_user,1,1,1,1

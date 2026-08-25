@@ -12,6 +12,12 @@
                        column_invisible="parent.category == 'custom'" optional="show"/>
                 <field name="date_end" column_invisible="1"/>
             </xpath>
+            <xpath expr="//page[@name='slots']/field[@name='slot_ids']" position="after">
+                <button name="%(appointment_slot_preview_action)d" type="action"
+                        string="Vista previa del horario" class="btn btn-link ps-0"
+                        icon="fa-calendar-check-o"
+                        invisible="category == 'custom'"/>
+            </xpath>
         </field>
     </record>
 

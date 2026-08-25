@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="appointment_slot_preview_view_form" model="ir.ui.view">
+        <field name="name">amma.appointment.slot.preview.form</field>
+        <field name="model">amma.appointment.slot.preview</field>
+        <field name="arch" type="xml">
+            <form string="Vista previa del horario">
+                <div class="alert alert-warning" role="alert" invisible="not gap_count">
+                    Hay <field name="gap_count" class="oe_inline"/> día(s) en ámbar sin ninguna
+                    franja vigente, aunque ese día de la semana sí tiene horario en otras
+                    fechas del rango. Suele significar que un periodo acaba antes de que
+                    empiece el siguiente.
+                </div>
+                <div class="alert alert-danger" role="alert" invisible="not overlap_count">
+                    Hay <field name="overlap_count" class="oe_inline"/> día(s) en rojo con
+                    franjas que se solapan. Normalmente es un periodo antiguo al que le falta
+                    la fecha de fin.
+                </div>
+                <group>
+                    <group>
+                        <field name="appointment_type_id" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                </group>
+                <field name="preview_html" readonly="1" nolabel="1"/>
+                <div class="text-muted">
+                    Muestra qué franjas del horario semanal aplican cada día. No tiene en cuenta
+                    ausencias, reservas ya hechas ni la antelación mínima.
+                </div>
+                <footer>
+                    <button special="cancel" string="Cerrar" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="appointment_slot_preview_action" model="ir.actions.act_window">
+        <field name="name">Vista previa del horario</field>
+        <field name="res_model">amma.appointment.slot.preview</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
