@@ -39,4 +39,4 @@ Apps de Enterprise: **Citas** (`appointment`) y **Firma** (`sign`).
    documentos. En consulta, abre la cita y pulsa **"Firmar (QR)"** para que
    firme en la tablet, o **"Imprimir…"** según necesites.
 
-Licencia: LGPL-3. Autor: Rebersa Soluciones.
+Licencia: LGPL-3. Autor: Lógica Consultores 360.

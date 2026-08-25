@@ -20,8 +20,8 @@ Módulo independiente para clínicas que usan **Citas** y **Firma**:
 No tiene ninguna relación con el módulo de grupos/clases: es exclusivo del flujo
 de citas presenciales.
 """,
-    'author': "Rebersa Soluciones",
-    'website': "https://www.rebersasoluciones.com",
+    'author': "Lógica Consultores 360",
+    'website': "https://www.logicaconsultores.com",
     'category': 'Services/Appointment',
     'version': '19.0.1.0.0',
     'license': 'LGPL-3',

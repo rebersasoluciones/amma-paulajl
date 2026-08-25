@@ -24,8 +24,8 @@ Módulo profesional para clínicas de fisioterapia que trabajan por grupos/clase
   próximas clases, puede desapuntarse y, si está permitido y hay hueco, apuntarse a
   clases de otros grupos.
 """,
-    'author': "Rebersa Soluciones",
-    'website': "https://www.rebersasoluciones.com",
+    'author': "Lógica Consultores 360",
+    'website': "https://www.logicaconsultores.com",
     'category': 'Services/Wellness',
     'version': '19.0.1.0.0',
     'license': 'LGPL-3',

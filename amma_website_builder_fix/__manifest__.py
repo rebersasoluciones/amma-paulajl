@@ -23,8 +23,8 @@ Mientras el reemplazo esté activo, el bloque *Mapa de Google* no ofrece sus
 opciones y el botón de configurar la clave de API avisa de que no está
 disponible; el resto del editor funciona igual.
 """,
-    'author': "Rebersa Soluciones",
-    'website': "https://www.rebersasoluciones.com",
+    'author': "Lógica Consultores 360",
+    'website': "https://www.logicaconsultores.com",
     'category': 'Website/Website',
     'version': '19.0.1.0.0',
     'license': 'LGPL-3',

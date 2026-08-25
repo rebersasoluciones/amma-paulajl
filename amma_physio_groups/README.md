@@ -82,4 +82,4 @@ La zona que se usa es la del usuario que genera las clases; si no la tiene puest
 (por ejemplo el usuario del cron), se usa la de la compañía. Conviene revisar que
 ambas estén configuradas en *Ajustes → Usuarios* y en la ficha de la compañía.
 
-Licencia: LGPL-3. Autor: Rebersa Soluciones.
+Licencia: LGPL-3. Autor: Lógica Consultores 360.
