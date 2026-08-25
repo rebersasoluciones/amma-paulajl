@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="appointment_type_view_form_slot_dates" model="ir.ui.view">
+        <field name="name">appointment.type.form.slot.dates</field>
+        <field name="model">appointment.type</field>
+        <field name="inherit_id" ref="appointment.appointment_type_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='slot_ids']/list/field[@name='end_hour']" position="after">
+                <field name="date_start" string="Vigencia" widget="daterange"
+                       options="{'end_date_field': 'date_end'}"
+                       column_invisible="parent.category == 'custom'" optional="show"/>
+                <field name="date_end" column_invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
